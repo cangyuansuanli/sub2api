@@ -1911,8 +1911,8 @@ func TestLoad_DefaultGatewayImageStreamConfig(t *testing.T) {
 	if cfg.Gateway.ImageStreamDataIntervalTimeout != 900 {
 		t.Fatalf("image_stream_data_interval_timeout = %d, want 900", cfg.Gateway.ImageStreamDataIntervalTimeout)
 	}
-	if cfg.Gateway.ImageStreamKeepaliveInterval != 10 {
-		t.Fatalf("image_stream_keepalive_interval = %d, want 10", cfg.Gateway.ImageStreamKeepaliveInterval)
+	if cfg.Gateway.ImageStreamKeepaliveInterval != 30 {
+		t.Fatalf("image_stream_keepalive_interval = %d, want 30", cfg.Gateway.ImageStreamKeepaliveInterval)
 	}
 	if cfg.Gateway.ImageConcurrency.Enabled {
 		t.Fatalf("image_concurrency.enabled = true, want false")

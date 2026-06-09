@@ -604,8 +604,15 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesAPIKey(
 	if account.ProxyID != nil && account.Proxy != nil {
 		proxyURL = account.Proxy.URL()
 	}
+	var stopUpstreamKeepalive func()
+	if parsed.Stream {
+		stopUpstreamKeepalive = s.startOpenAIImagesUpstreamKeepalive(c)
+	}
 	upstreamStart := time.Now()
 	resp, err := s.httpUpstream.Do(upstreamReq, proxyURL, account.ID, account.Concurrency)
+	if stopUpstreamKeepalive != nil {
+		stopUpstreamKeepalive()
+	}
 	SetOpsLatencyMs(c, OpsUpstreamLatencyMsKey, time.Since(upstreamStart).Milliseconds())
 	if err != nil {
 		safeErr := sanitizeUpstreamErrorMessage(err.Error())
@@ -876,13 +883,15 @@ func (s *OpenAIGatewayService) handleOpenAIImagesStreamingResponse(
 	c *gin.Context,
 	startTime time.Time,
 ) (OpenAIUsage, int, []string, *int, error) {
-	responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
-	contentType := strings.TrimSpace(resp.Header.Get("Content-Type"))
-	if contentType == "" {
-		contentType = "text/event-stream"
+	if !c.Writer.Written() {
+		responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
+		contentType := strings.TrimSpace(resp.Header.Get("Content-Type"))
+		if contentType == "" {
+			contentType = "text/event-stream"
+		}
+		c.Status(resp.StatusCode)
+		c.Header("Content-Type", contentType)
 	}
-	c.Status(resp.StatusCode)
-	c.Header("Content-Type", contentType)
 
 	flusher, ok := c.Writer.(http.Flusher)
 	if !ok {
@@ -1088,6 +1097,65 @@ func (s *OpenAIGatewayService) openAIImageStreamKeepaliveInterval() time.Duratio
 		return 0
 	}
 	return time.Duration(s.cfg.Gateway.ImageStreamKeepaliveInterval) * time.Second
+}
+
+func (s *OpenAIGatewayService) startOpenAIImagesUpstreamKeepalive(c *gin.Context) func() {
+	return startOpenAIImagesSSECommentKeepalive(c, s.openAIImageStreamKeepaliveInterval())
+}
+
+// startOpenAIImagesSSECommentKeepalive periodically writes SSE comment keepalive frames
+// while waiting for a long-running upstream image request, preventing proxies such as
+// Cloudflare from closing idle connections.
+func startOpenAIImagesSSECommentKeepalive(c *gin.Context, interval time.Duration) func() {
+	if c == nil || interval <= 0 {
+		return func() {}
+	}
+	flusher, ok := c.Writer.(http.Flusher)
+	if !ok {
+		return func() {}
+	}
+
+	ctx, cancel := context.WithCancel(c.Request.Context())
+	done := make(chan struct{})
+	var lastWriteAt atomic.Int64
+	lastWriteAt.Store(time.Now().UnixNano())
+
+	go func() {
+		defer close(done)
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if c.Request.Context().Err() != nil {
+					return
+				}
+				last := time.Unix(0, lastWriteAt.Load())
+				if time.Since(last) < interval {
+					continue
+				}
+				if !c.Writer.Written() {
+					c.Status(http.StatusOK)
+					c.Header("Content-Type", "text/event-stream")
+					c.Header("Cache-Control", "no-cache")
+					c.Header("Connection", "keep-alive")
+					c.Header("X-Accel-Buffering", "no")
+				}
+				if _, err := io.WriteString(c.Writer, ":\n\n"); err != nil {
+					return
+				}
+				flusher.Flush()
+				lastWriteAt.Store(time.Now().UnixNano())
+			}
+		}
+	}()
+
+	return func() {
+		cancel()
+		<-done
+	}
 }
 
 func extractOpenAIImagesBillableCountFromJSONBytes(body []byte) int {

@@ -1899,7 +1899,7 @@ func setDefaults() {
 	viper.SetDefault("gateway.stream_data_interval_timeout", 180)
 	viper.SetDefault("gateway.stream_keepalive_interval", 10)
 	viper.SetDefault("gateway.image_stream_data_interval_timeout", 900)
-	viper.SetDefault("gateway.image_stream_keepalive_interval", 10)
+	viper.SetDefault("gateway.image_stream_keepalive_interval", 30)
 	viper.SetDefault("gateway.max_line_size", 500*1024*1024)
 	viper.SetDefault("gateway.scheduling.sticky_session_max_waiting", 3)
 	viper.SetDefault("gateway.scheduling.sticky_session_wait_timeout", 120*time.Second)
@@ -2521,8 +2521,8 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("gateway.image_stream_keepalive_interval must be non-negative")
 	}
 	if c.Gateway.ImageStreamKeepaliveInterval != 0 &&
-		(c.Gateway.ImageStreamKeepaliveInterval < 5 || c.Gateway.ImageStreamKeepaliveInterval > 60) {
-		return fmt.Errorf("gateway.image_stream_keepalive_interval must be 0 or between 5-60 seconds")
+		(c.Gateway.ImageStreamKeepaliveInterval < 30 || c.Gateway.ImageStreamKeepaliveInterval > 60) {
+		return fmt.Errorf("gateway.image_stream_keepalive_interval must be 0 or between 30-60 seconds")
 	}
 	// 兼容旧键 sticky_previous_response_ttl_seconds
 	if c.Gateway.OpenAIWS.StickyResponseIDTTLSeconds <= 0 && c.Gateway.OpenAIWS.StickyPreviousResponseTTLSeconds > 0 {

@@ -32,6 +32,9 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/home',
     name: 'Home',
+    beforeEnter() {
+      window.location.replace('/home/')
+    },
     component: () => import('@/views/HomeView.vue'),
     meta: {
       requiresAuth: false,
@@ -178,7 +181,14 @@ const routes: RouteRecordRaw[] = [
   // ==================== User Routes ====================
   {
     path: '/',
-    redirect: '/home'
+    beforeEnter() {
+      window.location.replace('/home/')
+    },
+    component: () => import('@/views/HomeView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Home'
+    }
   },
   {
     path: '/dashboard',
@@ -226,6 +236,18 @@ const routes: RouteRecordRaw[] = [
       title: 'Redeem Code',
       titleKey: 'redeem.title',
       descriptionKey: 'redeem.description'
+    }
+  },
+  {
+    path: '/check-in',
+    name: 'CheckIn',
+    component: () => import('@/views/user/CheckInView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Daily Check-in',
+      titleKey: 'checkIn.title',
+      descriptionKey: 'checkIn.description'
     }
   },
   {
@@ -832,7 +854,8 @@ router.beforeEach(async (to, _from, next) => {
       '/admin/subscriptions',
       '/admin/redeem',
       '/subscriptions',
-      '/redeem'
+      '/redeem',
+      '/check-in'
     ]
 
     if (restrictedPaths.some((path) => to.path.startsWith(path))) {

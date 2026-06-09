@@ -107,6 +107,13 @@ func RegisterUserRoutes(
 			redeem.GET("/history", h.Redeem.GetHistory)
 		}
 
+		// 每日签到
+		checkIn := authenticated.Group("/check-in")
+		{
+			checkIn.GET("/status", h.CheckIn.GetStatus)
+			checkIn.POST("", h.CheckIn.CheckIn)
+		}
+
 		// 用户订阅
 		subscriptions := authenticated.Group("/subscriptions")
 		{

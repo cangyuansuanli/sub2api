@@ -18,6 +18,22 @@ describe('ccswitchImport utils', () => {
     usageScript: 'return true'
   }
 
+  it('base64-encodes usage scripts that contain non-Latin1 characters', () => {
+    const params = paramsFromDeeplink(
+      buildCcSwitchImportDeeplink({
+        ...baseInput,
+        platform: 'anthropic',
+        clientType: 'claude',
+        usageScript: 'const unit = "沧耳"; return { unit };'
+      })
+    )
+
+    const decoded = new TextDecoder().decode(
+      Uint8Array.from(atob(params.get('usageScript') || ''), (char) => char.charCodeAt(0))
+    )
+    expect(decoded).toBe('const unit = "沧耳"; return { unit };')
+  })
+
   it('adds the Codex model parameter for OpenAI imports', () => {
     const params = paramsFromDeeplink(
       buildCcSwitchImportDeeplink({

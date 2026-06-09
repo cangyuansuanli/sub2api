@@ -49,6 +49,15 @@ export function resolveCcSwitchImportConfig(
   }
 }
 
+export function encodeBase64Utf8(value: string): string {
+  const bytes = new TextEncoder().encode(value)
+  let binary = ''
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte)
+  }
+  return btoa(binary)
+}
+
 export function buildCcSwitchImportDeeplink(input: CcSwitchImportDeeplinkInput): string {
   const config = resolveCcSwitchImportConfig(input.platform, input.clientType, input.baseUrl)
   const entries: [string, string][] = [
@@ -60,7 +69,7 @@ export function buildCcSwitchImportDeeplink(input: CcSwitchImportDeeplinkInput):
     ['apiKey', input.apiKey],
     ['configFormat', 'json'],
     ['usageEnabled', 'true'],
-    ['usageScript', btoa(input.usageScript)],
+    ['usageScript', encodeBase64Utf8(input.usageScript)],
     ['usageAutoInterval', '30']
   ]
 

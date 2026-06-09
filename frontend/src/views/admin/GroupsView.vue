@@ -144,7 +144,7 @@
                   "
                 >
                   <span v-if="row.daily_limit_usd"
-                    >${{ row.daily_limit_usd }}/{{
+                    >{{ formatCurrency(row.daily_limit_usd) }}/{{
                       t("admin.groups.limitDay")
                     }}</span
                   >
@@ -157,7 +157,7 @@
                     >·</span
                   >
                   <span v-if="row.weekly_limit_usd"
-                    >${{ row.weekly_limit_usd }}/{{
+                    >{{ formatCurrency(row.weekly_limit_usd) }}/{{
                       t("admin.groups.limitWeek")
                     }}</span
                   >
@@ -167,7 +167,7 @@
                     >·</span
                   >
                   <span v-if="row.monthly_limit_usd"
-                    >${{ row.monthly_limit_usd }}/{{
+                    >{{ formatCurrency(row.monthly_limit_usd) }}/{{
                       t("admin.groups.limitMonth")
                     }}</span
                   >
@@ -258,7 +258,7 @@
                   t("admin.groups.usageToday")
                 }}</span>
                 <span class="ml-1 font-medium text-gray-700 dark:text-gray-300"
-                  >${{
+                  >{{
                     formatCost(usageMap.get(row.id)?.today_cost ?? 0)
                   }}</span
                 >
@@ -268,7 +268,7 @@
                   t("admin.groups.usageTotal")
                 }}</span>
                 <span class="ml-1 font-medium text-gray-700 dark:text-gray-300"
-                  >${{
+                  >{{
                     formatCost(usageMap.get(row.id)?.total_cost ?? 0)
                   }}</span
                 >
@@ -3038,6 +3038,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from "vue";
+import { BILLING_UNIT } from "@/constants/currency";
 import { useI18n } from "vue-i18n";
 import { useAppStore } from "@/stores/app";
 import { useOnboardingStore } from "@/stores/onboarding";
@@ -3061,6 +3062,7 @@ import { VueDraggable } from "vue-draggable-plus";
 import { createStableObjectKeyResolver } from "@/utils/stableObjectKey";
 import { useKeyedDebouncedSearch } from "@/composables/useKeyedDebouncedSearch";
 import { getPersistedPageSize } from "@/composables/usePersistedPageSize";
+import { formatCurrency } from '@/utils/format'
 import {
   createDefaultMessagesDispatchFormState,
   messagesDispatchConfigToFormState,
@@ -3728,7 +3730,7 @@ const formatImagePricePreview = (value: number | string | null | undefined) => {
   if (!Number.isFinite(price) || price < 0) {
     return t("admin.groups.imagePricing.notConfigured");
   }
-  return `$${price.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`;
+  return `${price.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")} ${BILLING_UNIT}`;
 };
 
 const buildImageFinalPricePreview = (form: ImagePricingFormState) => {
@@ -3813,11 +3815,7 @@ const loadGroups = async () => {
   }
 };
 
-const formatCost = (cost: number): string => {
-  if (cost >= 1000) return cost.toFixed(0);
-  if (cost >= 100) return cost.toFixed(1);
-  return cost.toFixed(2);
-};
+const formatCost = (cost: number): string => formatCurrency(cost, cost >= 100 ? 1 : 2)
 
 const loadUsageSummary = async () => {
   usageLoading.value = true;

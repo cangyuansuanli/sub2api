@@ -1,3 +1,5 @@
+import { BILLING_UNIT } from '@/constants/currency'
+
 export const TOKENS_PER_MILLION = 1_000_000
 
 interface TokenPriceFormatOptions {
@@ -45,5 +47,6 @@ export function formatTokenPricePerMillion(
 
   const fractionDigits = options.fractionDigits ?? 4
   const formatted = pricePerMillion.toFixed(fractionDigits)
-  return options.withCurrencySymbol == false ? formatted : `$${formatted}`
+  // 由用量反推的单价，展示平台计费单位（沧耳）
+  return options.withCurrencySymbol == false ? formatted : `${formatted} ${BILLING_UNIT}`
 }

@@ -77,6 +77,8 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	userService := service.NewUserService(userRepository, settingRepository, apiKeyAuthCacheInvalidator, billingCache)
 	redeemCache := repository.NewRedeemCache(redisClient)
 	redeemService := service.NewRedeemService(redeemCodeRepository, userRepository, subscriptionService, redeemCache, billingCacheService, client, apiKeyAuthCacheInvalidator, affiliateService)
+	checkInRepository := repository.NewCheckInRepository(client)
+	checkInService := service.NewCheckInService(checkInRepository, userRepository, billingCacheService, client, apiKeyAuthCacheInvalidator, configConfig)
 	secretEncryptor, err := repository.NewAESEncryptor(configConfig)
 	if err != nil {
 		return nil, err
@@ -156,6 +158,7 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	opsService := service.ProvideOpsService(opsRepository, settingRepository, configConfig, accountRepository, userRepository, concurrencyService, gatewayService, openAIGatewayService, geminiMessagesCompatService, antigravityGatewayService, opsSystemLogSink, settingService)
 	usageHandler := handler.NewUsageHandler(usageService, apiKeyService, opsService, settingService)
 	redeemHandler := handler.NewRedeemHandler(redeemService)
+	checkInHandler := handler.NewCheckInHandler(checkInService)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
 	announcementRepository := repository.NewAnnouncementRepository(client)
 	announcementReadRepository := repository.NewAnnouncementReadRepository(client)
@@ -253,7 +256,7 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	availableChannelHandler := handler.NewAvailableChannelHandler(channelService, apiKeyService, settingService)
 	idempotencyCoordinator := service.ProvideIdempotencyCoordinator(idempotencyRepository, configConfig)
 	idempotencyCleanupService := service.ProvideIdempotencyCleanupService(idempotencyRepository, configConfig)
-	handlers := handler.ProvideHandlers(authHandler, userHandler, apiKeyHandler, usageHandler, redeemHandler, subscriptionHandler, announcementHandler, channelMonitorUserHandler, adminHandlers, gatewayHandler, openAIGatewayHandler, handlerSettingHandler, totpHandler, handlerPaymentHandler, paymentWebhookHandler, availableChannelHandler, idempotencyCoordinator, idempotencyCleanupService)
+	handlers := handler.ProvideHandlers(authHandler, userHandler, apiKeyHandler, usageHandler, redeemHandler, checkInHandler, subscriptionHandler, announcementHandler, channelMonitorUserHandler, adminHandlers, gatewayHandler, openAIGatewayHandler, handlerSettingHandler, totpHandler, handlerPaymentHandler, paymentWebhookHandler, availableChannelHandler, idempotencyCoordinator, idempotencyCleanupService)
 	jwtAuthMiddleware := middleware.NewJWTAuthMiddleware(authService, userService)
 	adminAuthMiddleware := middleware.NewAdminAuthMiddleware(authService, userService, settingService)
 	apiKeyAuthMiddleware := middleware.NewAPIKeyAuthMiddleware(apiKeyService, subscriptionService, configConfig)

@@ -3,6 +3,7 @@
  * 参考 CRS 项目的 format.js 实现
  */
 
+import { BILLING_UNIT } from '@/constants/currency'
 import { i18n, getLocale } from '@/i18n'
 
 /**
@@ -53,25 +54,25 @@ export function formatNumber(num: number | null | undefined): string {
 }
 
 /**
- * 格式化货币金额
+ * 格式化计费金额（沧耳）
  * @param amount 金额
- * @param currency 货币代码，默认 USD
- * @returns 格式化后的字符串，如 "$1.25"
+ * @param fractionDigits 小数位数；未指定时小金额显示 6 位，否则 2 位
+ * @returns 格式化后的字符串，如 "1.25 沧耳"
  */
-export function formatCurrency(amount: number | null | undefined, currency: string = 'USD'): string {
-  if (amount === null || amount === undefined) return '$0.00'
+export function formatCurrency(amount: number | string | null | undefined, fractionDigits?: number): string {
+  const numeric =
+    typeof amount === 'string'
+      ? Number(amount)
+      : amount
 
-  const locale = getLocale()
+  if (numeric === null || numeric === undefined || !Number.isFinite(numeric)) {
+    return `0.00 ${BILLING_UNIT}`
+  }
 
-  // For very small amounts, show more decimals
-  const fractionDigits = amount > 0 && amount < 0.01 ? 6 : 2
+  const digits =
+    fractionDigits ?? (numeric > 0 && numeric < 0.01 ? 6 : 2)
 
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits
-  }).format(amount)
+  return `${numeric.toFixed(digits)} ${BILLING_UNIT}`
 }
 
 /**

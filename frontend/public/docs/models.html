@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>模型广场 - 沧元算力</title>
+  <meta name="description" content="沧元算力 模型广场：查看当前对外开放模型、分组和实际价格。">
+  <link rel="stylesheet" href="./model-market.css?v=20260522-image2-fix2">
+</head>
+<body>
+  <main class="market-shell">
+    <header class="market-header" aria-labelledby="market-title">
+      <div class="brand-row">
+        <img class="brand-logo" src="/logo.png" alt="">
+        <div>
+          <strong>沧元算力</strong>
+          <span>API 中转模型广场</span>
+        </div>
+      </div>
+      <div class="title-row">
+        <div>
+          <p class="eyebrow">Model Marketplace</p>
+          <h1 id="market-title">模型广场</h1>
+          <p class="header-copy">查看当前支持模型、可用分组和实际计费价格。</p>
+        </div>
+        <div class="header-actions">
+          <a class="text-link" href="/docs/">使用文档</a>
+          <a class="primary-link" href="/dashboard" target="_blank" rel="noopener">用户后台</a>
+        </div>
+      </div>
+      <dl class="stat-grid" aria-label="模型统计">
+        <div>
+          <dt>模型</dt>
+          <dd id="stat-models">0</dd>
+        </div>
+        <div>
+          <dt>平台</dt>
+          <dd id="stat-platforms">0</dd>
+        </div>
+        <div>
+          <dt>分组</dt>
+          <dd id="stat-groups">0</dd>
+        </div>
+        <div>
+          <dt>单位</dt>
+          <dd id="stat-unit">/M</dd>
+        </div>
+      </dl>
+    </header>
+
+    <section class="market-toolbar" aria-label="模型筛选">
+      <div class="filter-block">
+        <span class="filter-label">平台</span>
+        <div class="segmented" id="platform-tabs" role="tablist" aria-label="按平台筛选"></div>
+      </div>
+      <div class="filter-block">
+        <span class="filter-label">分组</span>
+        <div class="segmented" id="group-tabs" role="tablist" aria-label="按分组筛选"></div>
+      </div>
+      <label class="search-box">
+        <span>搜索</span>
+        <input id="model-search" type="search" placeholder="输入模型名称" autocomplete="off">
+      </label>
+    </section>
+
+    <section class="market-content" aria-live="polite">
+      <div id="model-sections"></div>
+      <div class="empty-state" id="empty-state" hidden>
+        <strong>没有匹配的模型</strong>
+        <span>换一个关键词或筛选条件再试。</span>
+      </div>
+    </section>
+
+    <footer class="market-footer">
+      <span id="updated-at"></span>
+      <span id="unit-description"></span>
+    </footer>
+  </main>
+
+  <div class="modal-backdrop" id="model-modal" hidden>
+    <section class="model-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" type="button" id="modal-close" aria-label="关闭">×</button>
+      <div id="modal-content"></div>
+    </section>
+  </div>
+
+  <script src="./model-market-data.js?v=20260605-opus48-prices"></script>
+  <script src="./model-market.js?v=20260605-opus48-prices"></script>
+</body>
+</html>

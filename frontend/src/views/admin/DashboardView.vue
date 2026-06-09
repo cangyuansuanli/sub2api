@@ -114,19 +114,19 @@
                   <span
                     class="text-green-600 dark:text-green-400"
                     :title="t('admin.dashboard.actual')"
-                    >${{ formatCost(stats.today_actual_cost) }}</span
+                    >{{ formatCost(stats.today_actual_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-orange-500 dark:text-orange-400"
                     :title="t('admin.dashboard.accountCost')"
-                    >${{ formatCost(stats.today_account_cost) }}</span
+                    >{{ formatCost(stats.today_account_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-gray-400 dark:text-gray-500"
                     :title="t('admin.dashboard.standard')"
-                    >${{ formatCost(stats.today_cost) }}</span
+                    >{{ formatCost(stats.today_cost) }}</span
                   >
                 </p>
               </div>
@@ -150,19 +150,19 @@
                   <span
                     class="text-green-600 dark:text-green-400"
                     :title="t('admin.dashboard.actual')"
-                    >${{ formatCost(stats.total_actual_cost) }}</span
+                    >{{ formatCost(stats.total_actual_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-orange-500 dark:text-orange-400"
                     :title="t('admin.dashboard.accountCost')"
-                    >${{ formatCost(stats.total_account_cost) }}</span
+                    >{{ formatCost(stats.total_account_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-gray-400 dark:text-gray-500"
                     :title="t('admin.dashboard.standard')"
-                    >${{ formatCost(stats.total_cost) }}</span
+                    >{{ formatCost(stats.total_cost) }}</span
                   >
                 </p>
               </div>
@@ -310,6 +310,7 @@ import type {
 import AppLayout from '@/components/layout/AppLayout.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import Icon from '@/components/icons/Icon.vue'
+import { formatCurrency } from '@/utils/format'
 import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import Select from '@/components/common/Select.vue'
 import ModelDistributionChart from '@/components/charts/ModelDistributionChart.vue'
@@ -539,13 +540,15 @@ const formatNumber = (value: number): string => {
 
 const formatCost = (value: number): string => {
   if (value >= 1000) {
-    return (value / 1000).toFixed(2) + 'K'
-  } else if (value >= 1) {
-    return value.toFixed(2)
-  } else if (value >= 0.01) {
-    return value.toFixed(3)
+    return `${(value / 1000).toFixed(2)}K 沧耳`
   }
-  return value.toFixed(4)
+  if (value >= 1) {
+    return formatCurrency(value, 2)
+  }
+  if (value >= 0.01) {
+    return formatCurrency(value, 3)
+  }
+  return formatCurrency(value, 4)
 }
 
 const formatDuration = (ms: number): string => {

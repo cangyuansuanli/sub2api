@@ -45,6 +45,45 @@ export function buildEmbeddedUrl(
   }
 }
 
+export interface ImagePlaygroundEmbedParams {
+  playgroundUrl: string
+  apiKey: string
+  model: string
+  apiMode?: string
+  userId?: number
+  authToken?: string | null
+  theme?: 'light' | 'dark'
+  lang?: string
+}
+
+/** Build GPT Image Playground iframe URL with Sub2API embed params and API key. */
+export function buildImagePlaygroundUrl(params: ImagePlaygroundEmbedParams): string {
+  const embeddedBase = buildEmbeddedUrl(
+    params.playgroundUrl,
+    params.userId,
+    params.authToken,
+    params.theme ?? 'light',
+    params.lang,
+  )
+  if (!embeddedBase) return embeddedBase
+  try {
+    const url = new URL(embeddedBase)
+    url.searchParams.set('apiKey', params.apiKey)
+    url.searchParams.set('model', params.model)
+    url.searchParams.set('apiMode', params.apiMode ?? 'images')
+    // SSE 流式生图：长耗时请求持续输出 partial 事件，避免代理/网关空闲断连
+    if (!url.searchParams.has('streamImages')) {
+      url.searchParams.set('streamImages', 'true')
+    }
+    if (!url.searchParams.has('streamPartialImages') && url.searchParams.get('streamImages') !== 'false') {
+      url.searchParams.set('streamPartialImages', '1')
+    }
+    return url.toString()
+  } catch {
+    return embeddedBase
+  }
+}
+
 export function detectTheme(): 'light' | 'dark' {
   if (typeof document === 'undefined') return 'light'
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light'

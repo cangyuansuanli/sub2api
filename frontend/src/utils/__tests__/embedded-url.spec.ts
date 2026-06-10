@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildEmbeddedUrl, detectTheme } from '../embedded-url'
+import { buildEmbeddedUrl, buildImagePlaygroundUrl, detectTheme } from '../embedded-url'
 
 describe('embedded-url', () => {
   const originalLocation = window.location
@@ -58,6 +58,29 @@ describe('embedded-url', () => {
 
   it('returns original string for invalid url input', () => {
     expect(buildEmbeddedUrl('not a url', 1, 'token')).toBe('not a url')
+  })
+
+  it('adds playground api params on top of embedded params', () => {
+    const result = buildImagePlaygroundUrl({
+      playgroundUrl: 'https://image.example.com',
+      apiKey: 'sk-test',
+      model: 'gpt-image-2',
+      apiMode: 'images',
+      userId: 7,
+      authToken: 'jwt-token',
+      theme: 'light',
+      lang: 'zh',
+    })
+
+    const url = new URL(result)
+    expect(url.searchParams.get('apiKey')).toBe('sk-test')
+    expect(url.searchParams.get('model')).toBe('gpt-image-2')
+    expect(url.searchParams.get('apiMode')).toBe('images')
+    expect(url.searchParams.get('streamImages')).toBe('true')
+    expect(url.searchParams.get('streamPartialImages')).toBe('1')
+    expect(url.searchParams.get('user_id')).toBe('7')
+    expect(url.searchParams.get('token')).toBe('jwt-token')
+    expect(url.searchParams.get('ui_mode')).toBe('embedded')
   })
 
   it('detects dark mode from document root class', () => {

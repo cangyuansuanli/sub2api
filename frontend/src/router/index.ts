@@ -394,6 +394,19 @@ const routes: RouteRecordRaw[] = [
       titleKey: 'customPage.title',
     }
   },
+  {
+    path: '/image-playground',
+    name: 'ImagePlayground',
+    component: () => import('@/views/user/ImagePlaygroundView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Image Playground',
+      titleKey: 'imagePlayground.title',
+      descriptionKey: 'imagePlayground.description',
+      requiresImagePlayground: true,
+    }
+  },
 
   // ==================== Admin Routes ====================
   {
@@ -858,6 +871,14 @@ router.beforeEach(async (to, _from, next) => {
     const riskControlEnabled = appStore.cachedPublicSettings?.risk_control_enabled === true
     if (!riskControlEnabled) {
       next(authStore.isAdmin ? '/admin/settings' : '/dashboard')
+      return
+    }
+  }
+
+  if (to.meta.requiresImagePlayground) {
+    const imagePlaygroundEnabled = appStore.cachedPublicSettings?.image_playground_enabled
+    if (imagePlaygroundEnabled === false) {
+      next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
       return
     }
   }

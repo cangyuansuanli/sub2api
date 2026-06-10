@@ -236,6 +236,9 @@ export interface PublicSettings {
   service_quota_enabled: boolean
   affiliate_enabled: boolean
   allow_user_view_error_requests?: boolean
+  image_playground_enabled?: boolean
+  image_playground_url?: string
+  image_playground_default_model?: string
 }
 
 export interface AuthResponse {

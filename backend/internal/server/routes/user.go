@@ -78,6 +78,12 @@ func RegisterUserRoutes(
 			channels.GET("/available", h.AvailableChannel.List)
 		}
 
+		// GPT Image Playground bootstrap
+		imagePlayground := authenticated.Group("/user/image-playground")
+		{
+			imagePlayground.GET("/bootstrap", h.ImagePlayground.GetBootstrap)
+		}
+
 		// 使用记录
 		usage := authenticated.Group("/usage")
 		{

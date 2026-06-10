@@ -378,6 +378,7 @@ export default {
     announcements: 'Announcements',
     apiKeys: 'API Keys',
     usage: 'Usage',
+    imagePlayground: 'Image Generation',
     redeem: 'Redeem',
     checkIn: 'Daily Check-in',
     affiliate: 'Affiliate Rebates',
@@ -5850,6 +5851,20 @@ export default {
         hideCcsImportButton: 'Hide CCS Import Button',
         hideCcsImportButtonHint: 'When enabled, the "Import to CCS" button will be hidden on the API Keys page'
       },
+      imagePlayground: {
+        title: 'Image Playground',
+        description: 'Show an "Image Generation" sidebar entry and embed GPT Image Playground via iframe',
+        enabled: 'Show Image Generation Entry',
+        enabledHint: 'Only shown in standard mode (not simple mode)',
+        url: 'Playground URL',
+        urlPlaceholder: 'https://image.example.com',
+        urlHint: 'Must be an absolute http(s) URL. The Playground container should enable API proxy pointing to the Sub2API gateway.',
+        defaultModel: 'Default Model',
+        defaultModelPlaceholder: 'gpt-image-2',
+        defaultModelHint: 'Default image model passed to the Playground',
+        iframeWarning:
+          '⚠️ iframe note: Ensure the Playground domain allows embedding (frame-ancestors) and configure ENABLE_API_PROXY=true with API_PROXY_URL in docker-compose.'
+      },
       purchase: {
         title: 'Recharge / Subscription Page',
         description: 'Show a "Recharge / Subscription" entry in the sidebar and open the configured URL in an iframe',
@@ -6669,6 +6684,21 @@ export default {
     notFoundDesc: 'This custom page does not exist or has been removed.',
     notConfiguredTitle: 'Page URL not configured',
     notConfiguredDesc: 'The URL for this custom page has not been properly configured.',
+  },
+
+  imagePlayground: {
+    title: 'Image Generation',
+    description: 'Generate and edit images online with GPT Image Playground',
+    openInNewTab: 'Open in new tab',
+    notEnabledTitle: 'Image generation is disabled',
+    notEnabledDesc: 'The administrator has not enabled the image playground entry. Please contact admin.',
+    notConfiguredTitle: 'Playground URL not configured',
+    notConfiguredDesc: 'The entry is enabled but the Playground URL is missing. Please contact admin.',
+    noApiKeyTitle: 'No API key yet',
+    noApiKeyDesc: 'Create and enable at least one API key before using online image generation.',
+    createApiKey: 'Create API key',
+    loadFailedTitle: 'Failed to load',
+    loadFailedDesc: 'Unable to load image playground configuration. Please try again later.',
   },
 
   // Announcements Page

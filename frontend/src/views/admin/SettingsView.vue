@@ -4786,6 +4786,62 @@
             </div>
           </div>
 
+          <!-- Image Playground -->
+          <div class="card">
+            <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ t("admin.settings.imagePlayground.title") }}
+              </h2>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ t("admin.settings.imagePlayground.description") }}
+              </p>
+            </div>
+            <div class="space-y-4 p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="font-medium text-gray-900 dark:text-white">{{
+                    t("admin.settings.imagePlayground.enabled")
+                  }}</label>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ t("admin.settings.imagePlayground.enabledHint") }}
+                  </p>
+                </div>
+                <Toggle v-model="form.image_playground_enabled" />
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-dark-200">
+                  {{ t("admin.settings.imagePlayground.url") }}
+                </label>
+                <input
+                  v-model="form.image_playground_url"
+                  type="url"
+                  class="input w-full"
+                  :placeholder="t('admin.settings.imagePlayground.urlPlaceholder')"
+                />
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {{ t("admin.settings.imagePlayground.urlHint") }}
+                </p>
+                <p class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                  {{ t("admin.settings.imagePlayground.iframeWarning") }}
+                </p>
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-dark-200">
+                  {{ t("admin.settings.imagePlayground.defaultModel") }}
+                </label>
+                <input
+                  v-model="form.image_playground_default_model"
+                  type="text"
+                  class="input w-full"
+                  :placeholder="t('admin.settings.imagePlayground.defaultModelPlaceholder')"
+                />
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {{ t("admin.settings.imagePlayground.defaultModelHint") }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Custom Menu Items -->
           <div class="card">
             <div
@@ -7043,6 +7099,9 @@ const form = reactive<SettingsForm>({
   home_content: "",
   backend_mode_enabled: false,
   hide_ccs_import_button: false,
+  image_playground_enabled: true,
+  image_playground_url: "",
+  image_playground_default_model: "gpt-image-2",
   payment_enabled: false,
   risk_control_enabled: false,
   payment_min_amount: 1,
@@ -8189,6 +8248,9 @@ async function saveSettings() {
       home_content: form.home_content,
       backend_mode_enabled: form.backend_mode_enabled,
       hide_ccs_import_button: form.hide_ccs_import_button,
+      image_playground_enabled: form.image_playground_enabled,
+      image_playground_url: form.image_playground_url,
+      image_playground_default_model: form.image_playground_default_model,
       table_default_page_size: form.table_default_page_size,
       table_page_size_options: form.table_page_size_options,
       custom_menu_items: form.custom_menu_items,

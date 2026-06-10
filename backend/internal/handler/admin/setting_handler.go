@@ -221,6 +221,9 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 		HideCcsImportButton:                    settings.HideCcsImportButton,
 		PurchaseSubscriptionEnabled:            settings.PurchaseSubscriptionEnabled,
 		PurchaseSubscriptionURL:                settings.PurchaseSubscriptionURL,
+		ImagePlaygroundEnabled:                 settings.ImagePlaygroundEnabled,
+		ImagePlaygroundURL:                     settings.ImagePlaygroundURL,
+		ImagePlaygroundDefaultModel:            settings.ImagePlaygroundDefaultModel,
 		TableDefaultPageSize:                   settings.TableDefaultPageSize,
 		TablePageSizeOptions:                   settings.TablePageSizeOptions,
 		CustomMenuItems:                        dto.ParseCustomMenuItems(settings.CustomMenuItems),
@@ -502,6 +505,9 @@ type UpdateSettingsRequest struct {
 	HideCcsImportButton         bool                  `json:"hide_ccs_import_button"`
 	PurchaseSubscriptionEnabled *bool                 `json:"purchase_subscription_enabled"`
 	PurchaseSubscriptionURL     *string               `json:"purchase_subscription_url"`
+	ImagePlaygroundEnabled      *bool                 `json:"image_playground_enabled"`
+	ImagePlaygroundURL          *string               `json:"image_playground_url"`
+	ImagePlaygroundDefaultModel *string               `json:"image_playground_default_model"`
 	TableDefaultPageSize        int                   `json:"table_default_page_size"`
 	TablePageSizeOptions        []int                 `json:"table_page_size_options"`
 	CustomMenuItems             *[]dto.CustomMenuItem `json:"custom_menu_items"`
@@ -1256,6 +1262,34 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		}
 	}
 
+	imagePlaygroundEnabled := previousSettings.ImagePlaygroundEnabled
+	if req.ImagePlaygroundEnabled != nil {
+		imagePlaygroundEnabled = *req.ImagePlaygroundEnabled
+	}
+	imagePlaygroundURL := previousSettings.ImagePlaygroundURL
+	if req.ImagePlaygroundURL != nil {
+		imagePlaygroundURL = strings.TrimSpace(*req.ImagePlaygroundURL)
+	}
+	imagePlaygroundDefaultModel := previousSettings.ImagePlaygroundDefaultModel
+	if req.ImagePlaygroundDefaultModel != nil {
+		imagePlaygroundDefaultModel = strings.TrimSpace(*req.ImagePlaygroundDefaultModel)
+	}
+	if imagePlaygroundEnabled {
+		if imagePlaygroundURL == "" {
+			response.BadRequest(c, "Image Playground URL is required when enabled")
+			return
+		}
+		if err := config.ValidateAbsoluteHTTPURL(imagePlaygroundURL); err != nil {
+			response.BadRequest(c, "Image Playground URL must be an absolute http(s) URL")
+			return
+		}
+	} else if imagePlaygroundURL != "" {
+		if err := config.ValidateAbsoluteHTTPURL(imagePlaygroundURL); err != nil {
+			response.BadRequest(c, "Image Playground URL must be an absolute http(s) URL")
+			return
+		}
+	}
+
 	// Frontend URL 验证
 	req.FrontendURL = strings.TrimSpace(req.FrontendURL)
 	if req.FrontendURL != "" {
@@ -1572,6 +1606,9 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		HideCcsImportButton:                    req.HideCcsImportButton,
 		PurchaseSubscriptionEnabled:            purchaseEnabled,
 		PurchaseSubscriptionURL:                purchaseURL,
+		ImagePlaygroundEnabled:                 imagePlaygroundEnabled,
+		ImagePlaygroundURL:                     imagePlaygroundURL,
+		ImagePlaygroundDefaultModel:            imagePlaygroundDefaultModel,
 		TableDefaultPageSize:                   req.TableDefaultPageSize,
 		TablePageSizeOptions:                   req.TablePageSizeOptions,
 		CustomMenuItems:                        customMenuJSON,
@@ -2015,6 +2052,9 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		HideCcsImportButton:                    updatedSettings.HideCcsImportButton,
 		PurchaseSubscriptionEnabled:            updatedSettings.PurchaseSubscriptionEnabled,
 		PurchaseSubscriptionURL:                updatedSettings.PurchaseSubscriptionURL,
+		ImagePlaygroundEnabled:                 updatedSettings.ImagePlaygroundEnabled,
+		ImagePlaygroundURL:                     updatedSettings.ImagePlaygroundURL,
+		ImagePlaygroundDefaultModel:            updatedSettings.ImagePlaygroundDefaultModel,
 		TableDefaultPageSize:                   updatedSettings.TableDefaultPageSize,
 		TablePageSizeOptions:                   updatedSettings.TablePageSizeOptions,
 		CustomMenuItems:                        dto.ParseCustomMenuItems(updatedSettings.CustomMenuItems),
@@ -2486,6 +2526,15 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	}
 	if before.PurchaseSubscriptionURL != after.PurchaseSubscriptionURL {
 		changed = append(changed, "purchase_subscription_url")
+	}
+	if before.ImagePlaygroundEnabled != after.ImagePlaygroundEnabled {
+		changed = append(changed, "image_playground_enabled")
+	}
+	if before.ImagePlaygroundURL != after.ImagePlaygroundURL {
+		changed = append(changed, "image_playground_url")
+	}
+	if before.ImagePlaygroundDefaultModel != after.ImagePlaygroundDefaultModel {
+		changed = append(changed, "image_playground_default_model")
 	}
 	if before.TableDefaultPageSize != after.TableDefaultPageSize {
 		changed = append(changed, "table_default_page_size")

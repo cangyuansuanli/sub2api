@@ -119,6 +119,11 @@ export const FeatureFlags = {
     mode: 'opt-in',
     label: 'Affiliate',
   }),
+  imagePlayground: defineFlag({
+    key: 'image_playground_enabled',
+    mode: 'opt-out',
+    label: 'Image Playground',
+  }),
 } as const
 
 export type RegisteredFeatureFlag = keyof typeof FeatureFlags

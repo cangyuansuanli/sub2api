@@ -720,6 +720,9 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		SettingKeyHideCcsImportButton,
 		SettingKeyPurchaseSubscriptionEnabled,
 		SettingKeyPurchaseSubscriptionURL,
+		SettingKeyImagePlaygroundEnabled,
+		SettingKeyImagePlaygroundURL,
+		SettingKeyImagePlaygroundDefaultModel,
 		SettingKeyTableDefaultPageSize,
 		SettingKeyTablePageSizeOptions,
 		SettingKeyCustomMenuItems,
@@ -845,6 +848,9 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		HideCcsImportButton:              settings[SettingKeyHideCcsImportButton] == "true",
 		PurchaseSubscriptionEnabled:      settings[SettingKeyPurchaseSubscriptionEnabled] == "true",
 		PurchaseSubscriptionURL:          strings.TrimSpace(settings[SettingKeyPurchaseSubscriptionURL]),
+		ImagePlaygroundEnabled:           !isFalseSettingValue(settings[SettingKeyImagePlaygroundEnabled]),
+		ImagePlaygroundURL:               strings.TrimSpace(settings[SettingKeyImagePlaygroundURL]),
+		ImagePlaygroundDefaultModel:      defaultImagePlaygroundModel(settings[SettingKeyImagePlaygroundDefaultModel]),
 		TableDefaultPageSize:             tableDefaultPageSize,
 		TablePageSizeOptions:             tablePageSizeOptions,
 		CustomMenuItems:                  settings[SettingKeyCustomMenuItems],
@@ -909,6 +915,14 @@ func clampChannelMonitorInterval(v int) int {
 		return channelMonitorIntervalMax
 	}
 	return v
+}
+
+func defaultImagePlaygroundModel(raw string) string {
+	model := strings.TrimSpace(raw)
+	if model == "" {
+		return "gpt-image-2"
+	}
+	return model
 }
 
 // ChannelMonitorRuntime is the lightweight view of the channel monitor feature
@@ -1159,6 +1173,9 @@ type PublicSettingsInjectionPayload struct {
 	HideCcsImportButton              bool                     `json:"hide_ccs_import_button"`
 	PurchaseSubscriptionEnabled      bool                     `json:"purchase_subscription_enabled"`
 	PurchaseSubscriptionURL          string                   `json:"purchase_subscription_url"`
+	ImagePlaygroundEnabled           bool                     `json:"image_playground_enabled"`
+	ImagePlaygroundURL               string                   `json:"image_playground_url"`
+	ImagePlaygroundDefaultModel      string                   `json:"image_playground_default_model"`
 	TableDefaultPageSize             int                      `json:"table_default_page_size"`
 	TablePageSizeOptions             []int                    `json:"table_page_size_options"`
 	CustomMenuItems                  json.RawMessage          `json:"custom_menu_items"`
@@ -1225,6 +1242,9 @@ func (s *SettingService) GetPublicSettingsForInjection(ctx context.Context) (any
 		HideCcsImportButton:              settings.HideCcsImportButton,
 		PurchaseSubscriptionEnabled:      settings.PurchaseSubscriptionEnabled,
 		PurchaseSubscriptionURL:          settings.PurchaseSubscriptionURL,
+		ImagePlaygroundEnabled:           settings.ImagePlaygroundEnabled,
+		ImagePlaygroundURL:               settings.ImagePlaygroundURL,
+		ImagePlaygroundDefaultModel:      settings.ImagePlaygroundDefaultModel,
 		TableDefaultPageSize:             settings.TableDefaultPageSize,
 		TablePageSizeOptions:             settings.TablePageSizeOptions,
 		CustomMenuItems:                  filterUserVisibleMenuItems(settings.CustomMenuItems),
@@ -1480,6 +1500,11 @@ func (s *SettingService) GetFrameSrcOrigins(ctx context.Context) ([]string, erro
 	// purchase subscription URL
 	if settings.PurchaseSubscriptionEnabled {
 		addOrigin(settings.PurchaseSubscriptionURL)
+	}
+
+	// image playground URL
+	if settings.ImagePlaygroundEnabled {
+		addOrigin(settings.ImagePlaygroundURL)
 	}
 
 	// all custom menu items (including admin-only, since CSP must allow all iframes)
@@ -1818,6 +1843,9 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 	updates[SettingKeyHideCcsImportButton] = strconv.FormatBool(settings.HideCcsImportButton)
 	updates[SettingKeyPurchaseSubscriptionEnabled] = strconv.FormatBool(settings.PurchaseSubscriptionEnabled)
 	updates[SettingKeyPurchaseSubscriptionURL] = strings.TrimSpace(settings.PurchaseSubscriptionURL)
+	updates[SettingKeyImagePlaygroundEnabled] = strconv.FormatBool(settings.ImagePlaygroundEnabled)
+	updates[SettingKeyImagePlaygroundURL] = strings.TrimSpace(settings.ImagePlaygroundURL)
+	updates[SettingKeyImagePlaygroundDefaultModel] = defaultImagePlaygroundModel(settings.ImagePlaygroundDefaultModel)
 	tableDefaultPageSize, tablePageSizeOptions := normalizeTablePreferences(
 		settings.TableDefaultPageSize,
 		settings.TablePageSizeOptions,
@@ -2692,6 +2720,9 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeySiteLogo:                                  "",
 		SettingKeyPurchaseSubscriptionEnabled:               "false",
 		SettingKeyPurchaseSubscriptionURL:                   "",
+		SettingKeyImagePlaygroundEnabled:                    "true",
+		SettingKeyImagePlaygroundURL:                        "",
+		SettingKeyImagePlaygroundDefaultModel:               "gpt-image-2",
 		SettingKeyTableDefaultPageSize:                      "20",
 		SettingKeyTablePageSizeOptions:                      "[10,20,50,100]",
 		SettingKeyCustomMenuItems:                           "[]",
@@ -2888,6 +2919,9 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		HideCcsImportButton:              settings[SettingKeyHideCcsImportButton] == "true",
 		PurchaseSubscriptionEnabled:      settings[SettingKeyPurchaseSubscriptionEnabled] == "true",
 		PurchaseSubscriptionURL:          strings.TrimSpace(settings[SettingKeyPurchaseSubscriptionURL]),
+		ImagePlaygroundEnabled:           !isFalseSettingValue(settings[SettingKeyImagePlaygroundEnabled]),
+		ImagePlaygroundURL:               strings.TrimSpace(settings[SettingKeyImagePlaygroundURL]),
+		ImagePlaygroundDefaultModel:      defaultImagePlaygroundModel(settings[SettingKeyImagePlaygroundDefaultModel]),
 		CustomMenuItems:                  settings[SettingKeyCustomMenuItems],
 		CustomEndpoints:                  settings[SettingKeyCustomEndpoints],
 		BackendModeEnabled:               settings[SettingKeyBackendModeEnabled] == "true",

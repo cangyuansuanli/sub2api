@@ -223,6 +223,31 @@ services:
     # 如需调试，可临时添加：ports: ["127.0.0.1:5433:5432"]
 
   # ===========================================================================
+  # GPT Image Playground (sidecar)
+  # ===========================================================================
+  gpt-image-playground:
+    build:
+      context: ../../gpt_image_playground
+      dockerfile: deploy/Dockerfile
+    image: gpt-image-playground:sub2api
+    container_name: gpt-image-playground
+    restart: unless-stopped
+    ports:
+      - "${IMAGE_PLAYGROUND_BIND_HOST:-127.0.0.1}:${IMAGE_PLAYGROUND_PORT:-8081}:80"
+    environment:
+      - ENABLE_API_PROXY=true
+      - LOCK_API_PROXY=true
+      - API_PROXY_URL=http://sub2api:8080/v1
+      - DEFAULT_API_URL=
+      - FRAME_ANCESTORS=${IMAGE_PLAYGROUND_FRAME_ANCESTORS:-https://api.cangyuansuanli.cn}
+      - TZ=${TZ:-Asia/Shanghai}
+    depends_on:
+      sub2api:
+        condition: service_started
+    networks:
+      - sub2api-network
+
+  # ===========================================================================
   # Redis Cache
   # ===========================================================================
   redis:

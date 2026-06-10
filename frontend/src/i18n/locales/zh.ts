@@ -378,6 +378,7 @@ export default {
     announcements: '公告',
     apiKeys: 'API 密钥',
     usage: '使用记录',
+    imagePlayground: '在线调用生图',
     redeem: '兑换',
     checkIn: '每日签到',
     affiliate: '邀请返利',
@@ -6006,6 +6007,20 @@ export default {
         hideCcsImportButton: '隐藏 CCS 导入按钮',
         hideCcsImportButtonHint: '启用后将在 API Keys 页面隐藏"导入 CCS"按钮'
       },
+      imagePlayground: {
+        title: '在线生图 Playground',
+        description: '在侧边栏展示“在线调用生图”入口，并通过 iframe 嵌入 GPT Image Playground',
+        enabled: '显示在线生图入口',
+        enabledHint: '仅在标准模式（非简单模式）下展示',
+        url: 'Playground URL',
+        urlPlaceholder: 'https://image.cangyuansuanli.cn',
+        urlHint: '必须是完整的 http(s) 链接；Playground 容器需开启 API 代理并指向 Sub2API 网关',
+        defaultModel: '默认模型',
+        defaultModelPlaceholder: 'gpt-image-2',
+        defaultModelHint: '下发给 Playground 的默认生图模型',
+        iframeWarning:
+          '⚠️ iframe 提示：请确保 Playground 域名允许被嵌入（frame-ancestors），并在 docker-compose 中配置 ENABLE_API_PROXY=true 与 API_PROXY_URL。'
+      },
       purchase: {
         title: '充值/订阅页面',
         description: '在侧边栏展示“充值/订阅”入口，并在页面内通过 iframe 打开指定链接',
@@ -6823,6 +6838,21 @@ export default {
     notFoundDesc: '该自定义页面不存在或已被删除。',
     notConfiguredTitle: '页面链接未配置',
     notConfiguredDesc: '该自定义页面的 URL 未正确配置。',
+  },
+
+  imagePlayground: {
+    title: '在线调用生图',
+    description: '使用 GPT Image Playground 在线生成与编辑图片',
+    openInNewTab: '新窗口打开',
+    notEnabledTitle: '生图功能未开启',
+    notEnabledDesc: '管理员暂未开启在线生图入口，请联系管理员。',
+    notConfiguredTitle: '生图页面未配置',
+    notConfiguredDesc: '管理员已开启入口，但尚未配置 Playground 地址，请联系管理员。',
+    noApiKeyTitle: '尚未创建 API 密钥',
+    noApiKeyDesc: '请先在 API 密钥页面创建并启用至少一个密钥，再使用在线生图。',
+    createApiKey: '前往创建密钥',
+    loadFailedTitle: '加载失败',
+    loadFailedDesc: '无法加载生图页面配置，请稍后重试。',
   },
 
   // Announcements Page

@@ -1,16 +1,16 @@
 <template>
   <div>
-    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+    <label class="mb-3 block text-sm font-semibold text-gray-800 dark:text-gray-100">
       {{ t('payment.paymentMethod') }}
     </label>
-    <div class="grid grid-cols-2 gap-3 sm:flex">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:flex">
       <button
         v-for="method in sortedMethods"
         :key="method.type"
         type="button"
         :disabled="!method.available"
         :class="[
-          'relative flex h-[60px] flex-col items-center justify-center rounded-lg border px-3 transition-all sm:flex-1',
+          'relative flex h-[68px] flex-col items-center justify-center rounded-2xl border px-4 transition-all lg:flex-1',
           !method.available
             ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-50 dark:border-dark-700 dark:bg-dark-800/50'
             : selected === method.type

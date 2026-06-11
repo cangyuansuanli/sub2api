@@ -160,7 +160,7 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 			)
 			if len(failedAccountIDs) == 0 {
 				markOpsRoutingCapacityLimitedIfNoAvailable(c, err)
-				h.handleStreamingAwareError(c, http.StatusServiceUnavailable, "api_error", "No available compatible accounts", streamStarted)
+				h.handleStreamingAwareError(c, http.StatusServiceUnavailable, "api_error", service.FriendlyOpenAIImagesNoAccountsMessage(), streamStarted)
 				return
 			}
 			if lastFailoverErr != nil {
@@ -172,7 +172,7 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 		}
 		if selection == nil || selection.Account == nil {
 			markOpsRoutingCapacityLimited(c)
-			h.handleStreamingAwareError(c, http.StatusServiceUnavailable, "api_error", "No available compatible accounts", streamStarted)
+			h.handleStreamingAwareError(c, http.StatusServiceUnavailable, "api_error", service.FriendlyOpenAIImagesNoAccountsMessage(), streamStarted)
 			return
 		}
 

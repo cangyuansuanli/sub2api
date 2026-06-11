@@ -222,16 +222,11 @@ services:
     # 注意：不暴露端口到宿主机，应用通过内部网络连接
     # 如需调试，可临时添加：ports: ["127.0.0.1:5433:5432"]
 
-  # ===========================================================================
-  # GPT Image Playground (private fork, git build)
-  # ===========================================================================
-  # BuildKit clones private fork via SSH (requires ssh-agent with GitHub key loaded).
+  # GPT Image Playground (local fork checkout: ../../gpt_image_playground from deploy/)
   gpt-image-playground:
     build:
-      context: git@github.com:lao-guo-luantanqin/gpt_image_playground.git#${IMAGE_PLAYGROUND_GIT_REF:-main}
+      context: ../../gpt_image_playground
       dockerfile: deploy/Dockerfile
-      ssh:
-        - default
     image: gpt-image-playground:sub2api
     container_name: gpt-image-playground
     restart: unless-stopped

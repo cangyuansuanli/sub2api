@@ -7,6 +7,10 @@ import (
 
 const openAIImagesNoBillingNote = "本次未成功生成图片，不会产生按次（图片）扣费。"
 
+func FriendlyOpenAIImagesNoAccountsMessage() string {
+	return friendlyOpenAIImagesClientMessage("api_error", "No available compatible accounts")
+}
+
 func friendlyOpenAIImagesClientMessage(code, message string) string {
 	code = strings.TrimSpace(strings.ToLower(code))
 	message = strings.TrimSpace(message)
@@ -33,7 +37,23 @@ func friendlyOpenAIImagesClientMessage(code, message string) string {
 
 func classifyOpenAIImagesUserError(code, message string) (reason string, suggestions []string) {
 	lower := strings.ToLower(message)
+	if looksLikeHTMLGatewayError(message) {
+		return "网关或上游服务暂时不可用（502/503），请求未完成。", []string{
+			"这通常表示 Cloudflare/反代或 Sub2API 上游渠道不可用，而不是提示词问题。",
+			"请稍后重试；若持续出现，请联系管理员检查生图分组的上游账号。",
+		}
+	}
 	switch {
+	case strings.Contains(lower, "no available compatible accounts") ||
+		strings.Contains(lower, "no available accounts") ||
+		strings.Contains(message, "密钥无效") ||
+		strings.Contains(message, "已失效") ||
+		strings.Contains(lower, "upstream authentication failed") ||
+		strings.Contains(lower, "upstream access forbidden"):
+		return "生图分组的上游账号不可用（密钥失效、被禁用或无备用账号）。", []string{
+			"请在 Sub2API 后台检查 GPT-Image-2 分组绑定的上游账号状态。",
+			"需要重新登录 OAuth 或更新 API Key，并确认账号未被禁用。",
+		}
 	case code == "content_policy_violation" || strings.Contains(lower, "content_policy_violation") || looksLikeOpenAIImagesToolJSON(message):
 		return "上游内容审核或安全策略拒绝了这次图生图/编辑请求。", []string{
 			"简化提示词，避免敏感人像、露骨描述或对现有图片文字的精细篡改要求。",
@@ -66,6 +86,16 @@ func classifyOpenAIImagesUserError(code, message string) (reason string, suggest
 	}
 }
 
+func looksLikeHTMLGatewayError(message string) bool {
+	lower := strings.ToLower(message)
+	return strings.Contains(lower, "<!doctype html") ||
+		strings.Contains(lower, "<html") ||
+		strings.Contains(lower, "cf-error-details") ||
+		strings.Contains(lower, "cloudflare") ||
+		strings.Contains(lower, "bad gateway") ||
+		strings.Contains(lower, "error code 502")
+}
+
 func looksLikeOpenAIImagesToolJSON(message string) bool {
 	lower := strings.ToLower(message)
 	trimmed := strings.TrimSpace(message)
@@ -80,6 +110,15 @@ func trimOpenAIImagesUserErrorDetail(message string) string {
 	message = strings.TrimSpace(message)
 	if message == "" {
 		return ""
+	}
+	if looksLikeHTMLGatewayError(message) {
+		if titleStart := strings.Index(strings.ToLower(message), "<title>"); titleStart >= 0 {
+			titleStart += len("<title>")
+			if titleEnd := strings.Index(strings.ToLower(message[titleStart:]), "</title>"); titleEnd >= 0 {
+				return strings.TrimSpace(message[titleStart : titleStart+titleEnd])
+			}
+		}
+		return "HTTP 502 Bad Gateway"
 	}
 	const maxRunes = 1200
 	if utf8.RuneCountInString(message) <= maxRunes {

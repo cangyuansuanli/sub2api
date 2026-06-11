@@ -809,7 +809,9 @@ func openAIImagesStreamPrefix(parsed *OpenAIImagesRequest) string {
 func buildOpenAIImagesStreamErrorBody(message string) []byte {
 	body := []byte(`{"type":"error","error":{"type":"upstream_error","message":""}}`)
 	if strings.TrimSpace(message) == "" {
-		message = "upstream request failed"
+		message = friendlyOpenAIImagesClientMessage("", "upstream request failed")
+	} else if !strings.Contains(message, openAIImagesNoBillingNote) {
+		message = friendlyOpenAIImagesClientMessage("", message)
 	}
 	body, _ = sjson.SetBytes(body, "error.message", message)
 	return body
@@ -819,7 +821,7 @@ func buildOpenAIImagesStreamErrorBodyFromUpstream(err *OpenAIImagesUpstreamError
 	if err == nil {
 		return buildOpenAIImagesStreamErrorBody("")
 	}
-	body := buildOpenAIImagesStreamErrorBody(err.clientMessage())
+	body := buildOpenAIImagesStreamErrorBody(friendlyOpenAIImagesClientMessage(err.Code, err.Message))
 	body, _ = sjson.SetBytes(body, "error.type", err.clientErrorType())
 	if code := strings.TrimSpace(err.Code); code != "" {
 		body, _ = sjson.SetBytes(body, "error.code", code)
@@ -836,7 +838,7 @@ func writeOpenAIImagesUpstreamErrorResponse(c *gin.Context, err *OpenAIImagesUps
 	}
 	errorObj := gin.H{
 		"type":    err.clientErrorType(),
-		"message": err.clientMessage(),
+		"message": friendlyOpenAIImagesClientMessage(err.Code, err.Message),
 	}
 	if code := strings.TrimSpace(err.Code); code != "" {
 		errorObj["code"] = code

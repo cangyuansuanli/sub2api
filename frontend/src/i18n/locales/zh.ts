@@ -6844,15 +6844,23 @@ export default {
     title: '在线调用生图',
     description: '使用 GPT Image Playground 在线生成与编辑图片',
     openInNewTab: '新窗口打开',
+    changeApiKey: '更换密钥',
     notEnabledTitle: '生图功能未开启',
     notEnabledDesc: '管理员暂未开启在线生图入口，请联系管理员。',
     notConfiguredTitle: '生图页面未配置',
     notConfiguredDesc: '管理员已开启入口，但尚未配置 Playground 地址，请联系管理员。',
-    noApiKeyTitle: '尚未创建 API 密钥',
-    noApiKeyDesc: '请先在 API 密钥页面创建并启用至少一个密钥，再使用在线生图。',
     createApiKey: '前往创建密钥',
     loadFailedTitle: '加载失败',
     loadFailedDesc: '无法加载生图页面配置，请稍后重试。',
+    apiKeyModal: {
+      title: '输入 API 密钥',
+      description:
+        '在线生图需要使用 OpenAI 平台分组下的 API 密钥。请输入密钥并保存，后续进入将自动使用已保存的密钥。',
+      placeholder: 'sk-...',
+      hint: '请确保密钥所属分组的平台为 OpenAI（platform=openai），且已开启生图权限。',
+      confirm: '确认并进入',
+      invalidKey: '请输入有效的 API 密钥',
+    },
   },
 
   // Announcements Page

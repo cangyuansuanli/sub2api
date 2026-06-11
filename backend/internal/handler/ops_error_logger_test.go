@@ -537,7 +537,7 @@ func TestClassifyOpsLocalBusinessLimitErrorsExcludedFromSLA(t *testing.T) {
 		{
 			name:        "route images API platform unsupported",
 			errType:     "not_found_error",
-			message:     "Images API is not supported for this platform",
+			message:     "生图 API 不支持当前 API 密钥所属分组的平台类型。Images API 仅适用于 OpenAI 平台分组（platform=openai）的密钥；若您使用的是 Claude、Gemini 等其他分组的密钥，请更换为 OpenAI 分组的 API 密钥。",
 			code:        "",
 			status:      http.StatusNotFound,
 			wantErrType: "not_found_error",
@@ -794,7 +794,7 @@ func TestClassifyOpsUpstreamAuthTextStillCountsForSLA(t *testing.T) {
 		},
 		{
 			name:    "provider image API unsupported shaped error",
-			message: "Images API is not supported for this platform",
+			message: "生图 API 不支持当前 API 密钥所属分组的平台类型。Images API 仅适用于 OpenAI 平台分组（platform=openai）的密钥；若您使用的是 Claude、Gemini 等其他分组的密钥，请更换为 OpenAI 分组的 API 密钥。",
 			code:    "404",
 			status:  http.StatusNotFound,
 		},

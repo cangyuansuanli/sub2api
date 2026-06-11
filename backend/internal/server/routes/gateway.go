@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const imagesAPINotSupportedMessage = "生图 API 不支持当前 API 密钥所属分组的平台类型。Images API 仅适用于 OpenAI 平台分组（platform=openai）的密钥；若您使用的是 Claude、Gemini 等其他分组的密钥，请更换为 OpenAI 分组的 API 密钥。"
+
 // RegisterGatewayRoutes 注册 API 网关路由（Claude/OpenAI/Gemini 兼容）
 func RegisterGatewayRoutes(
 	r *gin.Engine,
@@ -108,7 +110,7 @@ func RegisterGatewayRoutes(
 				c.JSON(http.StatusNotFound, gin.H{
 					"error": gin.H{
 						"type":    "not_found_error",
-						"message": "Images API is not supported for this platform",
+						"message": imagesAPINotSupportedMessage,
 					},
 				})
 				return
@@ -121,7 +123,7 @@ func RegisterGatewayRoutes(
 				c.JSON(http.StatusNotFound, gin.H{
 					"error": gin.H{
 						"type":    "not_found_error",
-						"message": "Images API is not supported for this platform",
+						"message": imagesAPINotSupportedMessage,
 					},
 				})
 				return
@@ -190,7 +192,7 @@ func RegisterGatewayRoutes(
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": gin.H{
 					"type":    "not_found_error",
-					"message": "Images API is not supported for this platform",
+					"message": imagesAPINotSupportedMessage,
 				},
 			})
 			return
@@ -203,7 +205,7 @@ func RegisterGatewayRoutes(
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": gin.H{
 					"type":    "not_found_error",
-					"message": "Images API is not supported for this platform",
+					"message": imagesAPINotSupportedMessage,
 				},
 			})
 			return

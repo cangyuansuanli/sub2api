@@ -6690,15 +6690,23 @@ export default {
     title: 'Image Generation',
     description: 'Generate and edit images online with GPT Image Playground',
     openInNewTab: 'Open in new tab',
+    changeApiKey: 'Change API key',
     notEnabledTitle: 'Image generation is disabled',
     notEnabledDesc: 'The administrator has not enabled the image playground entry. Please contact admin.',
     notConfiguredTitle: 'Playground URL not configured',
     notConfiguredDesc: 'The entry is enabled but the Playground URL is missing. Please contact admin.',
-    noApiKeyTitle: 'No API key yet',
-    noApiKeyDesc: 'Create and enable at least one API key before using online image generation.',
     createApiKey: 'Create API key',
     loadFailedTitle: 'Failed to load',
     loadFailedDesc: 'Unable to load image playground configuration. Please try again later.',
+    apiKeyModal: {
+      title: 'Enter API key',
+      description:
+        'Image generation requires an API key from an OpenAI platform group. Enter your key to save it for future visits.',
+      placeholder: 'sk-...',
+      hint: 'Make sure the key belongs to an OpenAI platform group (platform=openai) with image generation enabled.',
+      confirm: 'Confirm and enter',
+      invalidKey: 'Please enter a valid API key',
+    },
   },
 
   // Announcements Page

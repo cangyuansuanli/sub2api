@@ -37,23 +37,6 @@
         </div>
 
         <div
-          v-else-if="errorKind === 'noApiKey'"
-          class="flex h-full items-center justify-center p-10 text-center"
-        >
-          <div class="max-w-md">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('imagePlayground.noApiKeyTitle') }}
-            </h3>
-            <p class="mt-2 text-sm text-gray-500 dark:text-dark-400">
-              {{ t('imagePlayground.noApiKeyDesc') }}
-            </p>
-            <RouterLink to="/keys" class="btn btn-primary btn-sm mt-4 inline-flex">
-              {{ t('imagePlayground.createApiKey') }}
-            </RouterLink>
-          </div>
-        </div>
-
-        <div
           v-else-if="errorKind === 'loadFailed'"
           class="flex h-full items-center justify-center p-10 text-center"
         >
@@ -68,23 +51,63 @@
         </div>
 
         <div v-else-if="embeddedUrl" class="custom-embed-shell">
-          <a
-            :href="embeddedUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-secondary btn-sm custom-open-fab"
-          >
-            <Icon name="externalLink" size="sm" class="mr-1.5" :stroke-width="2" />
-            {{ t('imagePlayground.openInNewTab') }}
-          </a>
-          <iframe
-            :src="embeddedUrl"
-            class="custom-embed-frame"
-            allowfullscreen
-          ></iframe>
+          <div class="custom-toolbar-fab">
+            <button type="button" class="btn btn-secondary btn-sm" @click="openApiKeyModal">
+              <Icon name="key" size="sm" class="mr-1.5" :stroke-width="2" />
+              {{ t('imagePlayground.changeApiKey') }}
+            </button>
+            <a
+              :href="embeddedUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-secondary btn-sm"
+            >
+              <Icon name="externalLink" size="sm" class="mr-1.5" :stroke-width="2" />
+              {{ t('imagePlayground.openInNewTab') }}
+            </a>
+          </div>
+          <iframe :src="embeddedUrl" class="custom-embed-frame" allowfullscreen></iframe>
         </div>
       </div>
     </div>
+
+    <BaseDialog
+      :show="showApiKeyModal"
+      :title="t('imagePlayground.apiKeyModal.title')"
+      width="normal"
+      :close-on-click-outside="false"
+      :close-on-escape="!apiKeyModalRequired"
+      :show-close-button="!apiKeyModalRequired"
+      @close="closeApiKeyModal"
+    >
+      <p class="text-sm text-gray-600 dark:text-dark-300">
+        {{ t('imagePlayground.apiKeyModal.description') }}
+      </p>
+      <div class="mt-4">
+        <label class="input-label" for="image-playground-api-key">
+          {{ t('keys.apiKey') }}
+        </label>
+        <input
+          id="image-playground-api-key"
+          v-model="apiKeyInput"
+          type="password"
+          class="input mt-1"
+          :placeholder="t('imagePlayground.apiKeyModal.placeholder')"
+          autocomplete="off"
+          @keyup.enter="confirmApiKey"
+        />
+        <p v-if="apiKeyInputError" class="input-error mt-1">{{ apiKeyInputError }}</p>
+        <p class="input-hint mt-2">{{ t('imagePlayground.apiKeyModal.hint') }}</p>
+      </div>
+      <template #footer>
+        <RouterLink to="/keys" class="btn btn-secondary btn-sm">
+          {{ t('imagePlayground.createApiKey') }}
+        </RouterLink>
+        <button type="button" class="btn btn-primary btn-sm" @click="confirmApiKey">
+          {{ t('imagePlayground.apiKeyModal.confirm') }}
+        </button>
+      </template>
+    </BaseDialog>
   </AppLayout>
 </template>
 
@@ -95,11 +118,16 @@ import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores'
 import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import BaseDialog from '@/components/common/BaseDialog.vue'
 import Icon from '@/components/icons/Icon.vue'
-import { getImagePlaygroundBootstrap } from '@/api/imagePlayground'
+import { getImagePlaygroundBootstrap, type ImagePlaygroundBootstrap } from '@/api/imagePlayground'
 import { buildImagePlaygroundUrl, detectTheme } from '@/utils/embedded-url'
+import {
+  getSavedImagePlaygroundApiKey,
+  saveImagePlaygroundApiKey,
+} from '@/utils/imagePlaygroundStorage'
 
-type ErrorKind = 'disabled' | 'notConfigured' | 'noApiKey' | 'loadFailed' | null
+type ErrorKind = 'disabled' | 'notConfigured' | 'loadFailed' | null
 
 const { t, locale } = useI18n()
 const appStore = useAppStore()
@@ -109,16 +137,21 @@ const loading = ref(true)
 const errorKind = ref<ErrorKind>(null)
 const loadErrorMessage = ref('')
 const pageTheme = ref<'light' | 'dark'>('light')
-const bootstrap = ref<Awaited<ReturnType<typeof getImagePlaygroundBootstrap>> | null>(null)
+const playgroundConfig = ref<ImagePlaygroundBootstrap | null>(null)
+const savedApiKey = ref('')
+const showApiKeyModal = ref(false)
+const apiKeyModalRequired = ref(false)
+const apiKeyInput = ref('')
+const apiKeyInputError = ref('')
 let themeObserver: MutationObserver | null = null
 
 const embeddedUrl = computed(() => {
-  if (!bootstrap.value) return ''
+  if (!playgroundConfig.value || !savedApiKey.value) return ''
   return buildImagePlaygroundUrl({
-    playgroundUrl: bootstrap.value.playground_url,
-    apiKey: bootstrap.value.api_key,
-    model: bootstrap.value.model,
-    apiMode: bootstrap.value.api_mode,
+    playgroundUrl: playgroundConfig.value.playground_url,
+    apiKey: savedApiKey.value,
+    model: playgroundConfig.value.model,
+    apiMode: playgroundConfig.value.api_mode,
     userId: authStore.user?.id,
     authToken: authStore.token,
     theme: pageTheme.value,
@@ -126,11 +159,52 @@ const embeddedUrl = computed(() => {
   })
 })
 
+function openApiKeyModal() {
+  apiKeyInput.value = savedApiKey.value
+  apiKeyInputError.value = ''
+  apiKeyModalRequired.value = false
+  showApiKeyModal.value = true
+}
+
+function closeApiKeyModal() {
+  if (apiKeyModalRequired.value) return
+  showApiKeyModal.value = false
+  apiKeyInputError.value = ''
+}
+
+function confirmApiKey() {
+  const trimmed = apiKeyInput.value.trim()
+  if (!trimmed) {
+    apiKeyInputError.value = t('imagePlayground.apiKeyModal.invalidKey')
+    return
+  }
+
+  saveImagePlaygroundApiKey(authStore.user?.id, trimmed)
+  savedApiKey.value = trimmed
+  apiKeyInputError.value = ''
+  showApiKeyModal.value = false
+  apiKeyModalRequired.value = false
+}
+
+function promptApiKeyIfNeeded() {
+  const stored = getSavedImagePlaygroundApiKey(authStore.user?.id)
+  if (stored) {
+    savedApiKey.value = stored
+    return
+  }
+
+  apiKeyInput.value = ''
+  apiKeyInputError.value = ''
+  apiKeyModalRequired.value = true
+  showApiKeyModal.value = true
+}
+
 async function loadBootstrap() {
   loading.value = true
   errorKind.value = null
   loadErrorMessage.value = ''
-  bootstrap.value = null
+  playgroundConfig.value = null
+  savedApiKey.value = ''
 
   const settings = appStore.cachedPublicSettings
   if (settings?.image_playground_enabled === false) {
@@ -145,13 +219,12 @@ async function loadBootstrap() {
   }
 
   try {
-    bootstrap.value = await getImagePlaygroundBootstrap()
+    playgroundConfig.value = await getImagePlaygroundBootstrap()
+    promptApiKeyIfNeeded()
   } catch (error) {
     const err = error as { status?: number; message?: string }
     if (err.status === 400) {
       errorKind.value = 'notConfigured'
-    } else if (err.status === 404) {
-      errorKind.value = 'noApiKey'
     } else {
       errorKind.value = 'loadFailed'
       loadErrorMessage.value = err.message || ''
@@ -179,9 +252,8 @@ onUnmounted(() => {
 })
 
 watch(locale, () => {
-  if (bootstrap.value) {
-    // Recompute embedded URL when locale changes.
-    bootstrap.value = { ...bootstrap.value }
+  if (playgroundConfig.value && savedApiKey.value) {
+    playgroundConfig.value = { ...playgroundConfig.value }
   }
 })
 </script>
@@ -206,9 +278,10 @@ watch(locale, () => {
   @apply p-0;
 }
 
-.custom-open-fab {
-  @apply absolute right-3 top-3 z-10;
+.custom-toolbar-fab {
+  @apply absolute right-3 top-3 z-10 flex gap-2;
   @apply shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-800/80;
+  @apply rounded-lg p-1;
 }
 
 .custom-embed-frame {

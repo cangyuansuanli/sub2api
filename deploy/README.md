@@ -15,6 +15,8 @@ This directory contains files for deploying Sub2API on Linux servers.
 |------|-------------|
 | `docker-compose.yml` | Docker Compose configuration (named volumes) |
 | `docker-compose.local.yml` | Docker Compose configuration (local directories, easy migration) |
+| `docker-compose.production.yml` | Production stack: local build, edge nginx, Playground sidecar |
+| `nginx/default.conf` | Edge nginx vhost config for `docker-compose.production.yml` |
 | `docker-deploy.sh` | **One-click Docker deployment script (recommended)** |
 | `.env.example` | Docker environment variables template |
 | `DOCKER.md` | Docker Hub documentation |

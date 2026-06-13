@@ -201,7 +201,7 @@
           :updated-at="loginAgreementUpdatedAt"
           :visible="showAgreementModal"
           @accept="acceptLoginAgreement"
-          @reject="rejectLoginAgreement"
+          @reject="handleRejectLoginAgreement"
           @open="showAgreementModal = true"
         />
 
@@ -327,10 +327,20 @@ import {
   loadAffiliateReferralCode,
   resolveAffiliateReferralCode
 } from '@/utils/oauthAffiliate'
-import type { LoginAgreementDocument } from '@/types'
+import { useLoginAgreement } from '@/composables/useLoginAgreement'
 
 const { t, locale } = useI18n()
-const LOGIN_AGREEMENT_STORAGE_KEY = 'sub2api_login_agreement_consent'
+const {
+  loginAgreementEnabled,
+  loginAgreementMode,
+  loginAgreementUpdatedAt,
+  loginAgreementDocuments,
+  agreementAccepted,
+  showAgreementModal,
+  applyLoginAgreementSettings,
+  acceptLoginAgreement,
+  rejectLoginAgreement,
+} = useLoginAgreement()
 
 // ==================== Router & Stores ====================
 
@@ -361,13 +371,6 @@ const oidcOAuthProviderName = ref<string>('OIDC')
 const githubOAuthEnabled = ref<boolean>(false)
 const googleOAuthEnabled = ref<boolean>(false)
 const registrationEmailSuffixWhitelist = ref<string[]>([])
-const loginAgreementEnabled = ref<boolean>(false)
-const loginAgreementMode = ref<'modal' | 'checkbox' | string>('modal')
-const loginAgreementUpdatedAt = ref<string>('')
-const loginAgreementRevision = ref<string>('')
-const loginAgreementDocuments = ref<LoginAgreementDocument[]>([])
-const agreementAccepted = ref<boolean>(false)
-const showAgreementModal = ref<boolean>(false)
 
 // Turnstile
 const turnstileRef = ref<InstanceType<typeof TurnstileWidget> | null>(null)
@@ -485,8 +488,7 @@ onMounted(async () => {
     syncAffiliateReferralCode()
   } catch (error) {
     console.error('Failed to load public settings:', error)
-    loginAgreementEnabled.value = false
-    agreementAccepted.value = true
+    applyLoginAgreementSettings({})
   } finally {
     settingsLoaded.value = true
   }
@@ -510,64 +512,10 @@ onUnmounted(() => {
 
 // ==================== Login Agreement ====================
 
-function applyLoginAgreementSettings(settings: {
-  login_agreement_enabled?: boolean
-  login_agreement_mode?: string
-  login_agreement_updated_at?: string
-  login_agreement_revision?: string
-  login_agreement_documents?: LoginAgreementDocument[]
-}): void {
-  const documents = Array.isArray(settings.login_agreement_documents)
-    ? settings.login_agreement_documents.filter((doc) => doc.title?.trim())
-    : []
-  loginAgreementDocuments.value = documents
-  loginAgreementEnabled.value = settings.login_agreement_enabled === true && documents.length > 0
-  loginAgreementMode.value = settings.login_agreement_mode === 'checkbox' ? 'checkbox' : 'modal'
-  loginAgreementUpdatedAt.value = settings.login_agreement_updated_at || ''
-  loginAgreementRevision.value =
-    settings.login_agreement_revision ||
-    `${loginAgreementUpdatedAt.value}:${documents.map((doc) => `${doc.id}:${doc.title}`).join('|')}`
-
-  agreementAccepted.value = !loginAgreementEnabled.value || hasAcceptedLoginAgreement(loginAgreementRevision.value)
-  showAgreementModal.value =
-    loginAgreementEnabled.value && !agreementAccepted.value && loginAgreementMode.value !== 'checkbox'
-}
-
-function hasAcceptedLoginAgreement(revision: string): boolean {
-  if (!revision) {
-    return false
-  }
-  try {
-    const raw = localStorage.getItem(LOGIN_AGREEMENT_STORAGE_KEY)
-    if (!raw) {
-      return false
-    }
-    const parsed = JSON.parse(raw) as { revision?: string }
-    return parsed.revision === revision
-  } catch {
-    return false
-  }
-}
-
-function acceptLoginAgreement(): void {
-  if (loginAgreementRevision.value) {
-    localStorage.setItem(
-      LOGIN_AGREEMENT_STORAGE_KEY,
-      JSON.stringify({
-        revision: loginAgreementRevision.value,
-        accepted_at: new Date().toISOString()
-      })
-    )
-  }
-  agreementAccepted.value = true
-  showAgreementModal.value = false
-}
-
-function rejectLoginAgreement(): void {
-  localStorage.removeItem(LOGIN_AGREEMENT_STORAGE_KEY)
-  agreementAccepted.value = false
-  showAgreementModal.value = false
-  appStore.showWarning('未同意最新条款前，无法注册或使用快捷登录。')
+function handleRejectLoginAgreement(): void {
+  rejectLoginAgreement(() => {
+    appStore.showWarning('未同意最新条款前，无法注册或使用快捷登录。')
+  })
 }
 
 // ==================== Promo Code Validation ====================

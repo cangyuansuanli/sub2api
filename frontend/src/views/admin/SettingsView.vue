@@ -4842,6 +4842,50 @@
             </div>
           </div>
 
+          <!-- Infinite Canvas -->
+          <div class="card">
+            <div
+              class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
+            >
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ t("admin.settings.infiniteCanvas.title") }}
+              </h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ t("admin.settings.infiniteCanvas.description") }}
+              </p>
+            </div>
+            <div class="space-y-4 p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="font-medium text-gray-900 dark:text-white">{{
+                    t("admin.settings.infiniteCanvas.enabled")
+                  }}</label>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ t("admin.settings.infiniteCanvas.enabledHint") }}
+                  </p>
+                </div>
+                <Toggle v-model="form.infinite_canvas_enabled" />
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-dark-200">
+                  {{ t("admin.settings.infiniteCanvas.url") }}
+                </label>
+                <input
+                  v-model="form.infinite_canvas_url"
+                  type="url"
+                  class="input w-full"
+                  :placeholder="t('admin.settings.infiniteCanvas.urlPlaceholder')"
+                />
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {{ t("admin.settings.infiniteCanvas.urlHint") }}
+                </p>
+                <p class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                  {{ t("admin.settings.infiniteCanvas.iframeWarning") }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Custom Menu Items -->
           <div class="card">
             <div
@@ -7102,6 +7146,8 @@ const form = reactive<SettingsForm>({
   image_playground_enabled: true,
   image_playground_url: "",
   image_playground_default_model: "gpt-image-2",
+  infinite_canvas_enabled: true,
+  infinite_canvas_url: "https://canvas.cangyuansuanli.cn",
   payment_enabled: false,
   risk_control_enabled: false,
   payment_min_amount: 1,
@@ -8251,6 +8297,8 @@ async function saveSettings() {
       image_playground_enabled: form.image_playground_enabled,
       image_playground_url: form.image_playground_url,
       image_playground_default_model: form.image_playground_default_model,
+      infinite_canvas_enabled: form.infinite_canvas_enabled,
+      infinite_canvas_url: form.infinite_canvas_url,
       table_default_page_size: form.table_default_page_size,
       table_page_size_options: form.table_page_size_options,
       custom_menu_items: form.custom_menu_items,

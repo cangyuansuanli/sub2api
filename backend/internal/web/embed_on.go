@@ -294,13 +294,6 @@ func normalizeStaticAssetPath(cleanPath string) string {
 	if cleanPath == "" {
 		return "index.html"
 	}
-	trimmed := strings.TrimSuffix(cleanPath, "/")
-	if trimmed == "docs" {
-		return "docs/index.html"
-	}
-	if trimmed == "home" {
-		return "home/index.html"
-	}
 	return cleanPath
 }
 

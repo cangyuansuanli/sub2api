@@ -31,11 +31,17 @@ const routes: RouteRecordRaw[] = [
 
   // ==================== Public Routes ====================
   {
+    path: '/',
+    name: 'MarketingHome',
+    component: () => import('@/views/site/MarketingHomeView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Home'
+    }
+  },
+  {
     path: '/home',
     name: 'Home',
-    beforeEnter() {
-      window.location.replace('/home/')
-    },
     component: () => import('@/views/HomeView.vue'),
     meta: {
       requiresAuth: false,
@@ -178,19 +184,26 @@ const routes: RouteRecordRaw[] = [
       title: 'Legal Document'
     }
   },
-
-  // ==================== User Routes ====================
   {
-    path: '/',
-    beforeEnter() {
-      window.location.replace('/home/')
-    },
-    component: () => import('@/views/HomeView.vue'),
+    path: '/docs/models',
+    name: 'SiteModels',
+    component: () => import('@/views/site/ModelsView.vue'),
     meta: {
       requiresAuth: false,
-      title: 'Home'
+      title: 'Model Marketplace'
     }
   },
+  {
+    path: '/docs',
+    name: 'SiteDocs',
+    component: () => import('@/views/site/DocsView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Documentation'
+    }
+  },
+
+  // ==================== User Routes ====================
   {
     path: '/dashboard',
     name: 'Dashboard',
@@ -405,6 +418,20 @@ const routes: RouteRecordRaw[] = [
       titleKey: 'imagePlayground.title',
       descriptionKey: 'imagePlayground.description',
       requiresImagePlayground: true,
+    }
+  },
+
+  {
+    path: '/infinite-canvas',
+    name: 'InfiniteCanvas',
+    component: () => import('@/views/user/InfiniteCanvasView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Infinite Canvas',
+      titleKey: 'infiniteCanvas.title',
+      descriptionKey: 'infiniteCanvas.description',
+      requiresInfiniteCanvas: true,
     }
   },
 
@@ -725,7 +752,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/docs']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',
@@ -878,6 +905,14 @@ router.beforeEach(async (to, _from, next) => {
   if (to.meta.requiresImagePlayground) {
     const imagePlaygroundEnabled = appStore.cachedPublicSettings?.image_playground_enabled
     if (imagePlaygroundEnabled === false) {
+      next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
+      return
+    }
+  }
+
+  if (to.meta.requiresInfiniteCanvas) {
+    const infiniteCanvasEnabled = appStore.cachedPublicSettings?.infinite_canvas_enabled
+    if (infiniteCanvasEnabled === false) {
       next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
       return
     }

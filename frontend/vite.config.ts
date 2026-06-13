@@ -1,7 +1,56 @@
 import { defineConfig, loadEnv, Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import checker from 'vite-plugin-checker'
-import { resolve } from 'path'
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const MODEL_MARKET_DATA_SOURCE = resolve(__dirname, 'static-assets/site/model-market-data.json')
+const MODEL_MARKET_DATA_TARGET = 'site/model-market-data.json'
+
+function bundleModelMarketData(outDir: string) {
+  if (!existsSync(MODEL_MARKET_DATA_SOURCE)) {
+    throw new Error(`Missing model market data source: ${MODEL_MARKET_DATA_SOURCE}`)
+  }
+  const targetDir = resolve(outDir, 'site')
+  mkdirSync(targetDir, { recursive: true })
+  copyFileSync(MODEL_MARKET_DATA_SOURCE, resolve(targetDir, 'model-market-data.json'))
+}
+
+/**
+ * Bundle same-origin model market JSON so fetch() avoids cross-origin CDN CORS.
+ */
+function bundleSiteJsonAssets(outDir: string): Plugin {
+  return {
+    name: 'bundle-site-json-assets',
+    apply: 'build',
+    closeBundle() {
+      bundleModelMarketData(outDir)
+    },
+  }
+}
+
+function serveSiteJsonAssets(): Plugin {
+  return {
+    name: 'serve-site-json-assets',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.split('?')[0] !== `/${MODEL_MARKET_DATA_TARGET}`) {
+          next()
+          return
+        }
+        if (!existsSync(MODEL_MARKET_DATA_SOURCE)) {
+          res.statusCode = 404
+          res.end('model market data not found')
+          return
+        }
+        res.setHeader('Content-Type', 'application/json; charset=utf-8')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.end(readFileSync(MODEL_MARKET_DATA_SOURCE))
+      })
+    },
+  }
+}
 
 /**
  * Vite 插件：开发模式下注入公开配置到 index.html
@@ -34,19 +83,44 @@ function injectPublicSettings(backendUrl: string): Plugin {
   }
 }
 
+function injectStaticCdnAssets(cdnBase: string): Plugin {
+  const base = cdnBase.replace(/\/$/, '')
+  const favicon = base ? `${base}/site/logo.png` : ''
+
+  return {
+    name: 'inject-static-cdn-assets',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        if (!favicon) return html
+        return html.replace(
+          /<link rel="icon"[^>]*>/,
+          `<link rel="icon" type="image/png" href="${favicon}" />`
+        )
+      },
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), '')
   const backendUrl = env.VITE_DEV_PROXY_TARGET || 'http://localhost:8080'
   const devPort = Number(env.VITE_DEV_PORT || 3000)
+  const staticCdn = env.VITE_STATIC_CDN || ''
+  const outDir = resolve(__dirname, '../backend/internal/web/dist')
 
   return {
+    publicDir: false,
     plugins: [
       vue(),
       checker({
         vueTsc: true
       }),
-      injectPublicSettings(backendUrl)
+      injectPublicSettings(backendUrl),
+      injectStaticCdnAssets(staticCdn),
+      bundleSiteJsonAssets(outDir),
+      serveSiteJsonAssets(),
     ],
   resolve: {
     alias: {
@@ -61,7 +135,7 @@ export default defineConfig(({ mode }) => {
     __INTLIFY_JIT_COMPILATION__: true
   },
   build: {
-    outDir: '../backend/internal/web/dist',
+    outDir,
     emptyOutDir: true,
     rollupOptions: {
       output: {

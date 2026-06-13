@@ -379,6 +379,7 @@ export default {
     apiKeys: 'API Keys',
     usage: 'Usage',
     imagePlayground: 'Image Generation',
+    infiniteCanvas: 'Infinite Canvas',
     redeem: 'Redeem',
     checkIn: 'Daily Check-in',
     affiliate: 'Affiliate Rebates',
@@ -5865,6 +5866,17 @@ export default {
         iframeWarning:
           '⚠️ iframe note: Ensure the Playground domain allows embedding (frame-ancestors) and configure ENABLE_API_PROXY=true with API_PROXY_URL in docker-compose.'
       },
+      infiniteCanvas: {
+        title: 'Infinite Canvas',
+        description: 'Show an "Infinite Canvas" sidebar entry and embed Infinite Canvas via iframe',
+        enabled: 'Show Infinite Canvas Entry',
+        enabledHint: 'Only shown in standard mode (not simple mode)',
+        url: 'Canvas URL',
+        urlPlaceholder: 'https://canvas.example.com',
+        urlHint: 'Must be an absolute http(s) URL. Sub2API API address and key are passed via URL parameters.',
+        iframeWarning:
+          '⚠️ iframe note: Ensure allowCustomChannel is enabled in the canvas admin so users can connect to Sub2API via local channel mode.'
+      },
       purchase: {
         title: 'Recharge / Subscription Page',
         description: 'Show a "Recharge / Subscription" entry in the sidebar and open the configured URL in an iframe',
@@ -6704,6 +6716,29 @@ export default {
         'Image generation requires an API key from an OpenAI platform group. Enter your key to save it for future visits.',
       placeholder: 'sk-...',
       hint: 'Make sure the key belongs to an OpenAI platform group (platform=openai) with image generation enabled.',
+      confirm: 'Confirm and enter',
+      invalidKey: 'Please enter a valid API key',
+    },
+  },
+
+  infiniteCanvas: {
+    title: 'Infinite Canvas',
+    description: 'Orchestrate AI image, reference editing, and video workflows on an infinite canvas',
+    openInNewTab: 'Open in new tab',
+    changeApiKey: 'Change API key',
+    notEnabledTitle: 'Infinite Canvas is disabled',
+    notEnabledDesc: 'The administrator has not enabled the infinite canvas entry. Please contact admin.',
+    notConfiguredTitle: 'Canvas URL not configured',
+    notConfiguredDesc: 'The entry is enabled but the canvas URL is missing. Please contact admin.',
+    createApiKey: 'Create API key',
+    loadFailedTitle: 'Failed to load',
+    loadFailedDesc: 'Unable to load infinite canvas configuration. Please try again later.',
+    apiKeyModal: {
+      title: 'Enter API key',
+      description:
+        'Infinite Canvas calls models through the Sub2API gateway. Enter your API key to save it for future visits.',
+      placeholder: 'sk-...',
+      hint: 'Use an API key created in Sub2API with image/chat permissions enabled on the group.',
       confirm: 'Confirm and enter',
       invalidKey: 'Please enter a valid API key',
     },

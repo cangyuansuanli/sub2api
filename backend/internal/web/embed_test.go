@@ -762,3 +762,8 @@ func BenchmarkFrontendServerServeIndexHTML(b *testing.B) {
 		server.serveIndexHTML(c)
 	}
 }
+
+func TestNormalizeStaticAssetPath(t *testing.T) {
+	assert.Equal(t, "index.html", normalizeStaticAssetPath(""))
+	assert.Equal(t, "assets/app.js", normalizeStaticAssetPath("assets/app.js"))
+}

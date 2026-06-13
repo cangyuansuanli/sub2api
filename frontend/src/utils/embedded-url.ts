@@ -84,6 +84,34 @@ export function buildImagePlaygroundUrl(params: ImagePlaygroundEmbedParams): str
   }
 }
 
+/** Build Infinite Canvas iframe URL with Sub2API embed params and API key. */
+export function buildInfiniteCanvasUrl(params: {
+  canvasUrl: string
+  apiKey: string
+  apiBaseUrl: string
+  userId?: number
+  authToken?: string | null
+  theme?: 'light' | 'dark'
+  lang?: string
+}): string {
+  const embeddedBase = buildEmbeddedUrl(
+    params.canvasUrl,
+    params.userId,
+    params.authToken,
+    params.theme ?? 'light',
+    params.lang,
+  )
+  if (!embeddedBase) return embeddedBase
+  try {
+    const url = new URL(embeddedBase)
+    url.searchParams.set('apiKey', params.apiKey)
+    url.searchParams.set('baseUrl', params.apiBaseUrl)
+    return url.toString()
+  } catch {
+    return embeddedBase
+  }
+}
+
 export function detectTheme(): 'light' | 'dark' {
   if (typeof document === 'undefined') return 'light'
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light'

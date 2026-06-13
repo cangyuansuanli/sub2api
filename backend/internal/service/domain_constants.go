@@ -253,6 +253,8 @@ const (
 	SettingKeyImagePlaygroundEnabled      = "image_playground_enabled"      // 是否展示在线生图 Playground 入口
 	SettingKeyImagePlaygroundURL          = "image_playground_url"          // GPT Image Playground 基础 URL（iframe src）
 	SettingKeyImagePlaygroundDefaultModel = "image_playground_default_model" // Playground 默认生图模型
+	SettingKeyInfiniteCanvasEnabled       = "infinite_canvas_enabled"        // 是否展示无限画布入口
+	SettingKeyInfiniteCanvasURL           = "infinite_canvas_url"            // Infinite Canvas 基础 URL（iframe src）
 	SettingKeyTableDefaultPageSize        = "table_default_page_size"       // 表格默认每页条数
 	SettingKeyTablePageSizeOptions        = "table_page_size_options"       // 表格可选每页条数（JSON 数组）
 	SettingKeyCustomMenuItems             = "custom_menu_items"             // 自定义菜单项（JSON 数组）

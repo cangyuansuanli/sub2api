@@ -321,7 +321,7 @@ const (
 	defaultGoogleOAuthScopes     = "openid email profile"
 	defaultGoogleOAuthFrontend   = "/auth/oauth/callback"
 	defaultLoginAgreementMode    = "modal"
-	defaultLoginAgreementDate    = "2026-03-31"
+	defaultLoginAgreementDate    = defaultLoginAgreementContentDate
 )
 
 func normalizeLoginAgreementMode(raw string) string {
@@ -330,31 +330,6 @@ func normalizeLoginAgreementMode(raw string) string {
 		return "checkbox"
 	default:
 		return defaultLoginAgreementMode
-	}
-}
-
-func defaultLoginAgreementDocuments() []LoginAgreementDocument {
-	return []LoginAgreementDocument{
-		{
-			ID:        "terms",
-			Title:     "服务条款",
-			ContentMD: "",
-		},
-		{
-			ID:        "usage-policy",
-			Title:     "使用政策",
-			ContentMD: "",
-		},
-		{
-			ID:        "supported-regions",
-			Title:     "支持的国家和地区",
-			ContentMD: "",
-		},
-		{
-			ID:        "service-specific-terms",
-			Title:     "服务特定条款",
-			ContentMD: "",
-		},
 	}
 }
 
@@ -423,7 +398,7 @@ func parseLoginAgreementDocuments(raw string) []LoginAgreementDocument {
 	if len(docs) == 0 {
 		return defaultLoginAgreementDocuments()
 	}
-	return docs
+	return mergeLoginAgreementDocumentsWithDefaults(docs)
 }
 
 func marshalLoginAgreementDocuments(docs []LoginAgreementDocument) (string, error) {
@@ -723,6 +698,8 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		SettingKeyImagePlaygroundEnabled,
 		SettingKeyImagePlaygroundURL,
 		SettingKeyImagePlaygroundDefaultModel,
+		SettingKeyInfiniteCanvasEnabled,
+		SettingKeyInfiniteCanvasURL,
 		SettingKeyTableDefaultPageSize,
 		SettingKeyTablePageSizeOptions,
 		SettingKeyCustomMenuItems,
@@ -851,6 +828,8 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		ImagePlaygroundEnabled:           !isFalseSettingValue(settings[SettingKeyImagePlaygroundEnabled]),
 		ImagePlaygroundURL:               strings.TrimSpace(settings[SettingKeyImagePlaygroundURL]),
 		ImagePlaygroundDefaultModel:      defaultImagePlaygroundModel(settings[SettingKeyImagePlaygroundDefaultModel]),
+		InfiniteCanvasEnabled:            !isFalseSettingValue(settings[SettingKeyInfiniteCanvasEnabled]),
+		InfiniteCanvasURL:                strings.TrimSpace(settings[SettingKeyInfiniteCanvasURL]),
 		TableDefaultPageSize:             tableDefaultPageSize,
 		TablePageSizeOptions:             tablePageSizeOptions,
 		CustomMenuItems:                  settings[SettingKeyCustomMenuItems],
@@ -1176,6 +1155,8 @@ type PublicSettingsInjectionPayload struct {
 	ImagePlaygroundEnabled           bool                     `json:"image_playground_enabled"`
 	ImagePlaygroundURL               string                   `json:"image_playground_url"`
 	ImagePlaygroundDefaultModel      string                   `json:"image_playground_default_model"`
+	InfiniteCanvasEnabled            bool                     `json:"infinite_canvas_enabled"`
+	InfiniteCanvasURL                string                   `json:"infinite_canvas_url"`
 	TableDefaultPageSize             int                      `json:"table_default_page_size"`
 	TablePageSizeOptions             []int                    `json:"table_page_size_options"`
 	CustomMenuItems                  json.RawMessage          `json:"custom_menu_items"`
@@ -1245,6 +1226,8 @@ func (s *SettingService) GetPublicSettingsForInjection(ctx context.Context) (any
 		ImagePlaygroundEnabled:           settings.ImagePlaygroundEnabled,
 		ImagePlaygroundURL:               settings.ImagePlaygroundURL,
 		ImagePlaygroundDefaultModel:      settings.ImagePlaygroundDefaultModel,
+		InfiniteCanvasEnabled:            settings.InfiniteCanvasEnabled,
+		InfiniteCanvasURL:                settings.InfiniteCanvasURL,
 		TableDefaultPageSize:             settings.TableDefaultPageSize,
 		TablePageSizeOptions:             settings.TablePageSizeOptions,
 		CustomMenuItems:                  filterUserVisibleMenuItems(settings.CustomMenuItems),
@@ -1505,6 +1488,11 @@ func (s *SettingService) GetFrameSrcOrigins(ctx context.Context) ([]string, erro
 	// image playground URL
 	if settings.ImagePlaygroundEnabled {
 		addOrigin(settings.ImagePlaygroundURL)
+	}
+
+	// infinite canvas URL
+	if settings.InfiniteCanvasEnabled {
+		addOrigin(settings.InfiniteCanvasURL)
 	}
 
 	// all custom menu items (including admin-only, since CSP must allow all iframes)
@@ -1846,6 +1834,8 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 	updates[SettingKeyImagePlaygroundEnabled] = strconv.FormatBool(settings.ImagePlaygroundEnabled)
 	updates[SettingKeyImagePlaygroundURL] = strings.TrimSpace(settings.ImagePlaygroundURL)
 	updates[SettingKeyImagePlaygroundDefaultModel] = defaultImagePlaygroundModel(settings.ImagePlaygroundDefaultModel)
+	updates[SettingKeyInfiniteCanvasEnabled] = strconv.FormatBool(settings.InfiniteCanvasEnabled)
+	updates[SettingKeyInfiniteCanvasURL] = strings.TrimSpace(settings.InfiniteCanvasURL)
 	tableDefaultPageSize, tablePageSizeOptions := normalizeTablePreferences(
 		settings.TableDefaultPageSize,
 		settings.TablePageSizeOptions,
@@ -2711,7 +2701,7 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyEmailVerifyEnabled:                        "false",
 		SettingKeyRegistrationEmailSuffixWhitelist:          "[]",
 		SettingKeyPromoCodeEnabled:                          "true", // 默认启用优惠码功能
-		SettingKeyLoginAgreementEnabled:                     "false",
+		SettingKeyLoginAgreementEnabled:                     "true",
 		SettingKeyLoginAgreementMode:                        defaultLoginAgreementMode,
 		SettingKeyLoginAgreementUpdatedAt:                   defaultLoginAgreementDate,
 		SettingKeyLoginAgreementDocuments:                   loginAgreementDocumentsJSON,
@@ -2723,6 +2713,8 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyImagePlaygroundEnabled:                    "true",
 		SettingKeyImagePlaygroundURL:                        "",
 		SettingKeyImagePlaygroundDefaultModel:               "gpt-image-2",
+		SettingKeyInfiniteCanvasEnabled:                     "true",
+		SettingKeyInfiniteCanvasURL:                         "https://canvas.cangyuansuanli.cn",
 		SettingKeyTableDefaultPageSize:                      "20",
 		SettingKeyTablePageSizeOptions:                      "[10,20,50,100]",
 		SettingKeyCustomMenuItems:                           "[]",
@@ -2922,6 +2914,8 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		ImagePlaygroundEnabled:           !isFalseSettingValue(settings[SettingKeyImagePlaygroundEnabled]),
 		ImagePlaygroundURL:               strings.TrimSpace(settings[SettingKeyImagePlaygroundURL]),
 		ImagePlaygroundDefaultModel:      defaultImagePlaygroundModel(settings[SettingKeyImagePlaygroundDefaultModel]),
+		InfiniteCanvasEnabled:            !isFalseSettingValue(settings[SettingKeyInfiniteCanvasEnabled]),
+		InfiniteCanvasURL:                strings.TrimSpace(settings[SettingKeyInfiniteCanvasURL]),
 		CustomMenuItems:                  settings[SettingKeyCustomMenuItems],
 		CustomEndpoints:                  settings[SettingKeyCustomEndpoints],
 		BackendModeEnabled:               settings[SettingKeyBackendModeEnabled] == "true",

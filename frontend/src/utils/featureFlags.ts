@@ -124,6 +124,11 @@ export const FeatureFlags = {
     mode: 'opt-out',
     label: 'Image Playground',
   }),
+  infiniteCanvas: defineFlag({
+    key: 'infinite_canvas_enabled',
+    mode: 'opt-out',
+    label: 'Infinite Canvas',
+  }),
 } as const
 
 export type RegisteredFeatureFlag = keyof typeof FeatureFlags

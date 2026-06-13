@@ -140,6 +140,8 @@ type SystemSettings struct {
 	ImagePlaygroundEnabled      bool             `json:"image_playground_enabled"`
 	ImagePlaygroundURL          string           `json:"image_playground_url"`
 	ImagePlaygroundDefaultModel string           `json:"image_playground_default_model"`
+	InfiniteCanvasEnabled       bool             `json:"infinite_canvas_enabled"`
+	InfiniteCanvasURL           string           `json:"infinite_canvas_url"`
 	TableDefaultPageSize        int              `json:"table_default_page_size"`
 	TablePageSizeOptions        []int            `json:"table_page_size_options"`
 	CustomMenuItems             []CustomMenuItem `json:"custom_menu_items"`
@@ -294,6 +296,8 @@ type PublicSettings struct {
 	ImagePlaygroundEnabled           bool                     `json:"image_playground_enabled"`
 	ImagePlaygroundURL               string                   `json:"image_playground_url"`
 	ImagePlaygroundDefaultModel      string                   `json:"image_playground_default_model"`
+	InfiniteCanvasEnabled            bool                     `json:"infinite_canvas_enabled"`
+	InfiniteCanvasURL                string                   `json:"infinite_canvas_url"`
 	TableDefaultPageSize             int                      `json:"table_default_page_size"`
 	TablePageSizeOptions             []int                    `json:"table_page_size_options"`
 	CustomMenuItems                  []CustomMenuItem         `json:"custom_menu_items"`

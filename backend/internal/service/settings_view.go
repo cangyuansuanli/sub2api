@@ -140,6 +140,8 @@ type SystemSettings struct {
 	ImagePlaygroundEnabled      bool
 	ImagePlaygroundURL          string
 	ImagePlaygroundDefaultModel string
+	InfiniteCanvasEnabled       bool
+	InfiniteCanvasURL           string
 	TableDefaultPageSize        int
 	TablePageSizeOptions        []int
 	CustomMenuItems             string // JSON array of custom menu items
@@ -266,6 +268,8 @@ type PublicSettings struct {
 	ImagePlaygroundEnabled      bool
 	ImagePlaygroundURL          string
 	ImagePlaygroundDefaultModel string
+	InfiniteCanvasEnabled       bool
+	InfiniteCanvasURL           string
 	TableDefaultPageSize        int
 	TablePageSizeOptions        []int
 	CustomMenuItems             string // JSON array of custom menu items

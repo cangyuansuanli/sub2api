@@ -239,6 +239,8 @@ export interface PublicSettings {
   image_playground_enabled?: boolean
   image_playground_url?: string
   image_playground_default_model?: string
+  infinite_canvas_enabled?: boolean
+  infinite_canvas_url?: string
 }
 
 export interface AuthResponse {

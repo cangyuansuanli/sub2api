@@ -1,12 +1,13 @@
 # =============================================================================
 # Sub2API Docker Compose - Production (local directory + edge nginx)
 # =============================================================================
-# Builds sub2api and gpt-image-playground from sibling fork checkouts on disk.
+# Builds sub2api, gpt-image-playground, and infinite-canvas from sibling fork checkouts on disk.
 #
 # Expected layout (e.g. under /opt):
 #   sub2api/                  ← this repository
 #   sub2api/deploy/           ← run compose from here (data/, postgres_data/, …)
 #   gpt_image_playground/     ← sibling checkout of lao-guo-luantanqin fork
+#   infinite-canvas/          ← sibling checkout of basketikun/infinite-canvas
 #
 # Quick Start:
 #   1. Clone gpt_image_playground next to sub2api (see paths above)
@@ -134,6 +135,26 @@ services:
       - sub2api-network
 
   # ===========================================================================
+  # Infinite Canvas (build from sibling: ../../infinite-canvas)
+  # ===========================================================================
+  infinite-canvas:
+    build:
+      context: ../../infinite-canvas
+      dockerfile: Dockerfile
+    image: infinite-canvas:sub2api
+    container_name: infinite-canvas
+    restart: unless-stopped
+    env_file:
+      - ../../infinite-canvas/.env
+    volumes:
+      - ../../infinite-canvas/data:/app/data
+    depends_on:
+      sub2api:
+        condition: service_started
+    networks:
+      - sub2api-network
+
+  # ===========================================================================
   # Edge Nginx (Host-based routing for Cloudflare → :80)
   # ===========================================================================
   edge-nginx:
@@ -147,6 +168,7 @@ services:
     depends_on:
       - sub2api
       - gpt-image-playground
+      - infinite-canvas
     networks:
       - sub2api-network
 

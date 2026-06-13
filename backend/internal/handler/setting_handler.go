@@ -71,6 +71,8 @@ func (h *SettingHandler) GetPublicSettings(c *gin.Context) {
 		ImagePlaygroundEnabled:           settings.ImagePlaygroundEnabled,
 		ImagePlaygroundURL:               settings.ImagePlaygroundURL,
 		ImagePlaygroundDefaultModel:      settings.ImagePlaygroundDefaultModel,
+		InfiniteCanvasEnabled:            settings.InfiniteCanvasEnabled,
+		InfiniteCanvasURL:                settings.InfiniteCanvasURL,
 		TableDefaultPageSize:             settings.TableDefaultPageSize,
 		TablePageSizeOptions:             settings.TablePageSizeOptions,
 		CustomMenuItems:                  dto.ParseUserVisibleMenuItems(settings.CustomMenuItems),

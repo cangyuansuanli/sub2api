@@ -84,6 +84,12 @@ func RegisterUserRoutes(
 			imagePlayground.GET("/bootstrap", h.ImagePlayground.GetBootstrap)
 		}
 
+		// Infinite Canvas bootstrap
+		infiniteCanvas := authenticated.Group("/user/infinite-canvas")
+		{
+			infiniteCanvas.GET("/bootstrap", h.InfiniteCanvas.GetBootstrap)
+		}
+
 		// 使用记录
 		usage := authenticated.Group("/usage")
 		{

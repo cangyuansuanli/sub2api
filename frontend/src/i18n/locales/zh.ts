@@ -379,6 +379,7 @@ export default {
     apiKeys: 'API 密钥',
     usage: '使用记录',
     imagePlayground: '在线调用生图',
+    infiniteCanvas: '无限画布',
     redeem: '兑换',
     checkIn: '每日签到',
     affiliate: '邀请返利',
@@ -6021,6 +6022,17 @@ export default {
         iframeWarning:
           '⚠️ iframe 提示：请确保 Playground 域名允许被嵌入（frame-ancestors），并在 docker-compose 中配置 ENABLE_API_PROXY=true 与 API_PROXY_URL。'
       },
+      infiniteCanvas: {
+        title: '无限画布',
+        description: '在侧边栏展示“无限画布”入口，并通过 iframe 嵌入 Infinite Canvas',
+        enabled: '显示无限画布入口',
+        enabledHint: '仅在标准模式（非简单模式）下展示',
+        url: '画布 URL',
+        urlPlaceholder: 'https://canvas.cangyuansuanli.cn',
+        urlHint: '必须是完整的 http(s) 链接；用户将通过 URL 参数自动填入 Sub2API API 地址与密钥',
+        iframeWarning:
+          '⚠️ iframe 提示：请确保画布站点后台开启 allowCustomChannel，以便用户通过本地直连渠道使用 Sub2API。'
+      },
       purchase: {
         title: '充值/订阅页面',
         description: '在侧边栏展示“充值/订阅”入口，并在页面内通过 iframe 打开指定链接',
@@ -6858,6 +6870,29 @@ export default {
         '在线生图需要使用 OpenAI 平台分组下的 API 密钥。请输入密钥并保存，后续进入将自动使用已保存的密钥。',
       placeholder: 'sk-...',
       hint: '请确保密钥所属分组的平台为 OpenAI（platform=openai），且已开启生图权限。',
+      confirm: '确认并进入',
+      invalidKey: '请输入有效的 API 密钥',
+    },
+  },
+
+  infiniteCanvas: {
+    title: '无限画布',
+    description: '在无限画布中编排 AI 生图、参考图编辑与视频生成工作流',
+    openInNewTab: '新窗口打开',
+    changeApiKey: '更换密钥',
+    notEnabledTitle: '无限画布未开启',
+    notEnabledDesc: '管理员暂未开启无限画布入口，请联系管理员。',
+    notConfiguredTitle: '画布页面未配置',
+    notConfiguredDesc: '管理员已开启入口，但尚未配置画布地址，请联系管理员。',
+    createApiKey: '前往创建密钥',
+    loadFailedTitle: '加载失败',
+    loadFailedDesc: '无法加载无限画布配置，请稍后重试。',
+    apiKeyModal: {
+      title: '输入 API 密钥',
+      description:
+        '无限画布将通过 Sub2API 网关调用模型。请输入 API 密钥并保存，后续进入将自动使用已保存的密钥。',
+      placeholder: 'sk-...',
+      hint: '请使用已在 Sub2API 创建的 API 密钥，并确保对应分组已开启生图/对话权限。',
       confirm: '确认并进入',
       invalidKey: '请输入有效的 API 密钥',
     },

@@ -436,6 +436,8 @@ export interface SystemSettings {
   image_playground_enabled: boolean;
   image_playground_url: string;
   image_playground_default_model: string;
+  infinite_canvas_enabled: boolean;
+  infinite_canvas_url: string;
   table_default_page_size: number;
   table_page_size_options: number[];
   backend_mode_enabled: boolean;
@@ -697,6 +699,8 @@ export interface UpdateSettingsRequest {
   image_playground_enabled?: boolean;
   image_playground_url?: string;
   image_playground_default_model?: string;
+  infinite_canvas_enabled?: boolean;
+  infinite_canvas_url?: string;
   table_default_page_size?: number;
   table_page_size_options?: number[];
   backend_mode_enabled?: boolean;

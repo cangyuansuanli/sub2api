@@ -224,6 +224,8 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 		ImagePlaygroundEnabled:                 settings.ImagePlaygroundEnabled,
 		ImagePlaygroundURL:                     settings.ImagePlaygroundURL,
 		ImagePlaygroundDefaultModel:            settings.ImagePlaygroundDefaultModel,
+		InfiniteCanvasEnabled:                  settings.InfiniteCanvasEnabled,
+		InfiniteCanvasURL:                      settings.InfiniteCanvasURL,
 		TableDefaultPageSize:                   settings.TableDefaultPageSize,
 		TablePageSizeOptions:                   settings.TablePageSizeOptions,
 		CustomMenuItems:                        dto.ParseCustomMenuItems(settings.CustomMenuItems),
@@ -508,6 +510,8 @@ type UpdateSettingsRequest struct {
 	ImagePlaygroundEnabled      *bool                 `json:"image_playground_enabled"`
 	ImagePlaygroundURL          *string               `json:"image_playground_url"`
 	ImagePlaygroundDefaultModel *string               `json:"image_playground_default_model"`
+	InfiniteCanvasEnabled       *bool                 `json:"infinite_canvas_enabled"`
+	InfiniteCanvasURL           *string               `json:"infinite_canvas_url"`
 	TableDefaultPageSize        int                   `json:"table_default_page_size"`
 	TablePageSizeOptions        []int                 `json:"table_page_size_options"`
 	CustomMenuItems             *[]dto.CustomMenuItem `json:"custom_menu_items"`
@@ -1290,6 +1294,30 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		}
 	}
 
+	infiniteCanvasEnabled := previousSettings.InfiniteCanvasEnabled
+	if req.InfiniteCanvasEnabled != nil {
+		infiniteCanvasEnabled = *req.InfiniteCanvasEnabled
+	}
+	infiniteCanvasURL := previousSettings.InfiniteCanvasURL
+	if req.InfiniteCanvasURL != nil {
+		infiniteCanvasURL = strings.TrimSpace(*req.InfiniteCanvasURL)
+	}
+	if infiniteCanvasEnabled {
+		if infiniteCanvasURL == "" {
+			response.BadRequest(c, "Infinite Canvas URL is required when enabled")
+			return
+		}
+		if err := config.ValidateAbsoluteHTTPURL(infiniteCanvasURL); err != nil {
+			response.BadRequest(c, "Infinite Canvas URL must be an absolute http(s) URL")
+			return
+		}
+	} else if infiniteCanvasURL != "" {
+		if err := config.ValidateAbsoluteHTTPURL(infiniteCanvasURL); err != nil {
+			response.BadRequest(c, "Infinite Canvas URL must be an absolute http(s) URL")
+			return
+		}
+	}
+
 	// Frontend URL 验证
 	req.FrontendURL = strings.TrimSpace(req.FrontendURL)
 	if req.FrontendURL != "" {
@@ -1609,6 +1637,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		ImagePlaygroundEnabled:                 imagePlaygroundEnabled,
 		ImagePlaygroundURL:                     imagePlaygroundURL,
 		ImagePlaygroundDefaultModel:            imagePlaygroundDefaultModel,
+		InfiniteCanvasEnabled:                  infiniteCanvasEnabled,
+		InfiniteCanvasURL:                      infiniteCanvasURL,
 		TableDefaultPageSize:                   req.TableDefaultPageSize,
 		TablePageSizeOptions:                   req.TablePageSizeOptions,
 		CustomMenuItems:                        customMenuJSON,
@@ -2055,6 +2085,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		ImagePlaygroundEnabled:                 updatedSettings.ImagePlaygroundEnabled,
 		ImagePlaygroundURL:                     updatedSettings.ImagePlaygroundURL,
 		ImagePlaygroundDefaultModel:            updatedSettings.ImagePlaygroundDefaultModel,
+		InfiniteCanvasEnabled:                  updatedSettings.InfiniteCanvasEnabled,
+		InfiniteCanvasURL:                      updatedSettings.InfiniteCanvasURL,
 		TableDefaultPageSize:                   updatedSettings.TableDefaultPageSize,
 		TablePageSizeOptions:                   updatedSettings.TablePageSizeOptions,
 		CustomMenuItems:                        dto.ParseCustomMenuItems(updatedSettings.CustomMenuItems),
@@ -2535,6 +2567,12 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	}
 	if before.ImagePlaygroundDefaultModel != after.ImagePlaygroundDefaultModel {
 		changed = append(changed, "image_playground_default_model")
+	}
+	if before.InfiniteCanvasEnabled != after.InfiniteCanvasEnabled {
+		changed = append(changed, "infinite_canvas_enabled")
+	}
+	if before.InfiniteCanvasURL != after.InfiniteCanvasURL {
+		changed = append(changed, "infinite_canvas_url")
 	}
 	if before.TableDefaultPageSize != after.TableDefaultPageSize {
 		changed = append(changed, "table_default_page_size")

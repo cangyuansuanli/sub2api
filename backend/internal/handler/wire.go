@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"context"
+	"log"
+
 	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
@@ -83,6 +86,11 @@ func ProvideSystemHandler(updateService *service.UpdateService, lockService *ser
 
 // ProvideSettingHandler creates SettingHandler with version from BuildInfo
 func ProvideSettingHandler(settingService *service.SettingService, buildInfo BuildInfo, notificationEmailService *service.NotificationEmailService) *SettingHandler {
+	if settingService != nil {
+		if err := settingService.EnsureLoginAgreementDefaults(context.Background()); err != nil {
+			log.Printf("Warning: failed to ensure login agreement defaults: %v", err)
+		}
+	}
 	h := NewSettingHandler(settingService, buildInfo.Version)
 	h.SetNotificationEmailService(notificationEmailService)
 	return h
@@ -115,6 +123,7 @@ func ProvideHandlers(
 	paymentWebhookHandler *PaymentWebhookHandler,
 	availableChannelHandler *AvailableChannelHandler,
 	imagePlaygroundHandler *ImagePlaygroundHandler,
+	infiniteCanvasHandler *InfiniteCanvasHandler,
 	_ *service.IdempotencyCoordinator,
 	_ *service.IdempotencyCleanupService,
 ) *Handlers {
@@ -137,6 +146,7 @@ func ProvideHandlers(
 		PaymentWebhook:   paymentWebhookHandler,
 		AvailableChannel: availableChannelHandler,
 		ImagePlayground:  imagePlaygroundHandler,
+		InfiniteCanvas:   infiniteCanvasHandler,
 	}
 }
 
@@ -160,6 +170,7 @@ var ProviderSet = wire.NewSet(
 	NewPaymentWebhookHandler,
 	NewAvailableChannelHandler,
 	NewImagePlaygroundHandler,
+	NewInfiniteCanvasHandler,
 
 	// Admin handlers
 	admin.NewDashboardHandler,
